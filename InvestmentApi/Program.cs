@@ -16,11 +16,13 @@ builder.Services.AddControllers();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.WithOrigins(
-                "http://localhost:4200",                // lokalny Angular
-                "https://osin99.github.io")             // GitHub Pages
-              .AllowAnyHeader()
-              .AllowAnyMethod()
+        policy
+            .WithOrigins(
+                "http://localhost:4200",          // lokalny Angular
+                "https://osin99.github.io"        // GitHub Pages
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
         );
 });
 
@@ -33,19 +35,29 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// --- Użycie CORS (przed MapControllers) ---
+// --- CORS (przed MapControllers) ---
 app.UseCors("AllowFrontend");
 
-// --- Swagger tylko w Dev ---
-if (app.Environment.IsDevelopment())
+// --- Swagger w Dev (lub włącz przez zmienną środowiskową SWAGGER__ENABLED=true) ---
+if (app.Environment.IsDevelopment() || 
+    builder.Configuration.GetValue<bool>("SWAGGER__ENABLED", false))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// --- HTTPS redirect tylko lokalnie (w kontenerze nie) ---
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseAuthorization();
 
 app.MapControllers();
+
+// --- Nasłuchiwanie na porcie Rendera ---
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Urls.Add($"http://0.0.0.0:{port}");
 
 app.Run();
