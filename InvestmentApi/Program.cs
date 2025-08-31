@@ -1,3 +1,4 @@
+using System.IO;
 using InvestmentApi.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -5,27 +6,33 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// DB
+// --- DB: ścieżka z ENV albo /data/investments.db (dla Render) ---
+var dbPath = Environment.GetEnvironmentVariable("DB_PATH") ?? "/data/investments.db";
+var dbDir  = Path.GetDirectoryName(dbPath);
+if (!string.IsNullOrWhiteSpace(dbDir))
+{
+    Directory.CreateDirectory(dbDir); // upewnij się, że katalog istnieje
+}
 builder.Services.AddDbContext<InvestmentContext>(options =>
-    options.UseSqlite("Data Source=investments.db"));
+    options.UseSqlite($"Data Source={dbPath}"));
 
-// Controllers
+// --- Kontrolery ---
 builder.Services.AddControllers();
 
-// CORS
+// --- CORS ---
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
         policy.WithOrigins(
-                "https://osin99.github.io",   // GH Pages (origin to tylko host, ścieżka nie gra roli)
-                "http://localhost:4200"       // dev
+                "https://osin99.github.io",  // GH Pages
+                "http://localhost:4200"      // dev
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
         );
 });
 
-// Swagger
+// --- Swagger ---
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -34,7 +41,7 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Auto-migracja/utworzenie DB
+// --- Auto-migracja/utworzenie DB ---
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<InvestmentContext>();
@@ -43,7 +50,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseCors("AllowFrontend");
 
-// Swagger w dev (lub ustaw zmienną SWAGGER__ENABLED=true)
+// --- Swagger w Dev (lub przez SWAGGER__ENABLED=true) ---
 if (app.Environment.IsDevelopment() ||
     builder.Configuration.GetValue<bool>("SWAGGER__ENABLED", false))
 {
@@ -51,7 +58,7 @@ if (app.Environment.IsDevelopment() ||
     app.UseSwaggerUI();
 }
 
-// Bez HTTPS redirect w kontenerze
+// --- HTTPS redirect tylko lokalnie ---
 if (app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
@@ -60,7 +67,7 @@ if (app.Environment.IsDevelopment())
 app.UseAuthorization();
 app.MapControllers();
 
-// Render port
+// --- Nasłuchiwanie na porcie Rendera ---
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Urls.Add($"http://0.0.0.0:{port}");
 
