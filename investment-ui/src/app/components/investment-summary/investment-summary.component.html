@@ -1,0 +1,24 @@
+<ul class="list-group" *ngIf="!isLoading">
+  <li class="list-group-item" *ngFor="let s of summaries">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <strong>{{ s.symbol }}</strong>
+        ({{ s.totalAmount | number:'1.4-8' }} szt.)
+        <br />
+        <span class="text-muted small">
+          Wpłacono: {{ s.totalInvested | currency:'PLN':'symbol':'1.2-2' }} |
+          Rynkowo: {{ s.marketValue | currency:'PLN':'symbol':'1.2-2' }}
+        </span>
+      </div>
+      <div>
+        <span
+          [ngClass]="getProfit(s) >= 0 ? 'text-success' : 'text-danger'"
+          class="fw-bold"
+        >
+          <i [ngClass]="getProfit(s) >= 0 ? 'bi bi-arrow-up' : 'bi bi-arrow-down'"></i>
+          {{ getProfitPercent(s) }}%
+        </span>
+      </div>
+    </div>
+  </li>
+</ul>

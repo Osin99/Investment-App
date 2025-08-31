@@ -1,0 +1,61 @@
+<h2 class="mb-4">
+  {{ form.id ? '✏️ Edytuj inwestycję' : '📝 Dodaj inwestycję' }}
+</h2>
+
+<!-- ⛔ NIE #form → ✅ #f -->
+<form #f="ngForm" (ngSubmit)="submitForm()" class="needs-validation" novalidate>
+
+  <div class="mb-3">
+    <label for="symbol" class="form-label">Symbol:</label>
+    <input
+      type="text"
+      id="symbol"
+      name="symbol"
+      class="form-control"
+      [(ngModel)]="form.symbol"
+      required />
+  </div>
+
+  <div class="mb-3">
+    <label for="amount" class="form-label">Ilość:</label>
+    <input
+      type="number"
+      id="amount"
+      name="amount"
+      class="form-control"
+      [(ngModel)]="form.amount"
+      required
+      min="0.00000001"
+      step="any" />
+  </div>
+
+  <div class="mb-3">
+    <label for="buyPrice" class="form-label">Cena zakupu:</label>
+    <input
+      type="number"
+      id="buyPrice"
+      name="buyPrice"
+      class="form-control"
+      [(ngModel)]="form.buyPrice"
+      required
+      min="0"
+      step="any" />
+  </div>
+
+  <div class="mb-3">
+    <label for="buyDate" class="form-label">Data zakupu:</label>
+    <input
+      type="date"
+      id="buyDate"
+      name="buyDate"
+      class="form-control"
+      [(ngModel)]="form.buyDate"
+      required />
+  </div>
+
+  <!-- używamy teraz aliasu `f` -->
+  <button type="submit" class="btn btn-success" [disabled]="f.invalid">
+    💾 Zapisz
+  </button>
+
+</form>

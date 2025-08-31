@@ -1,0 +1,53 @@
+<div class="container mt-4">
+  <!-- GÓRNE MENU -->
+  <div class="mb-3 border p-3 bg-light rounded">
+    <h4 class="m-0">📋 Portfel Inwestycyjny</h4>
+  </div>
+
+  <!-- PRZYCISK DODAWANIA INWESTYCJI -->
+  <div class="mb-3">
+    <button class="btn btn-primary" (click)="goToForm()">➕ Dodaj inwestycję</button>
+  </div>
+
+  <!-- UKŁAD 2-KOLUMNOWY: kursy + lista inwestycji -->
+  <div class="row">
+    <!-- LEWA KOLUMNA – kursy kryptowalut -->
+<div class="col-md-4 mb-3">
+  <app-investment-chart></app-investment-chart>
+</div>
+
+    <!-- PRAWA KOLUMNA – lista inwestycji -->
+    <div class="col-md-8 mb-3">
+      <div class="border p-3 rounded h-100">
+        <app-investment-list></app-investment-list>
+      </div>
+    </div>
+  </div>
+
+  <!-- PODSUMOWANIE INWESTYCJI -->
+  <div class="row mt-4">
+    <!-- LEWA KOLUMNA – szczegółowa lista inwestycji wg kryptowaluty -->
+    <div class="col-md-6 mb-3">
+      <div class="card h-100">
+        <div class="card-header bg-light">
+          <strong>📊 Twoje aktywa</strong>
+        </div>
+        <div class="card-body">
+          <app-investment-summary></app-investment-summary>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRAWA KOLUMNA – podsumowanie finansowe -->
+    <div class="col-md-6 mb-3">
+      <div class="card h-100">
+        <div class="card-header bg-light">
+          <strong>💰 Podsumowanie finansowe</strong>
+        </div>
+        <div class="card-body">
+          <app-investment-summary-box></app-investment-summary-box>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

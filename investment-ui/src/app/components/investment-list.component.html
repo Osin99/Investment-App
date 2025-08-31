@@ -1,0 +1,28 @@
+<h2 class="mb-4">📋 Zakupione Aktywa</h2>
+
+
+<table class="table table-striped table-bordered">
+  <thead class="table-dark">
+    <tr>
+      <th>ID</th>
+      <th>Symbol</th>
+      <th>Ilość</th>
+      <th>Cena zakupu</th>
+      <th>Data zakupu</th>
+      <th>Akcje</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let investment of investments">
+      <td>{{ investment.id }}</td>
+      <td>{{ investment.symbol }}</td>
+      <td>{{ investment.amount | number: '1.2-2' }}</td>
+      <td>{{ investment.buyPrice | number: '1.2-2' }} zł</td>
+      <td>{{ investment.buyDate ? (investment.buyDate | date: 'longDate') : '–' }}</td>
+      <td>
+        <button class="btn btn-sm btn-danger" (click)="deleteInvestment(investment.id)">🗑</button>
+        <button class="btn btn-sm btn-primary me-2" (click)=" editInvestment(investment.id)">✏️</button>
+      </td>
+    </tr>
+  </tbody>
+</table>

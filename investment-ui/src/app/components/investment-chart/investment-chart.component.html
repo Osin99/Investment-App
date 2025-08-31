@@ -1,0 +1,24 @@
+<div class="card">
+  <div class="card-header bg-light">
+    <strong>📊 Zysk / Strata wg kryptowaluty</strong>
+  </div>
+  <div class="card-body" *ngIf="!isLoading">
+    <canvas baseChart
+      [type]="chartType"
+      [data]="chartData"
+      [options]="{
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: { title: { display: true, text: 'Kryptowaluta' } },
+          y: { title: { display: true, text: 'Zysk / Strata (PLN)' } }
+        }
+      }">
+    </canvas>
+  </div>
+  <div class="card-body" *ngIf="isLoading">
+    <p>🔄 Ładowanie wykresu...</p>
+  </div>
+</div>
