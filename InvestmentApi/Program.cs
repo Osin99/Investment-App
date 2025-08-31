@@ -1,28 +1,30 @@
 using InvestmentApi.Data;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Dodaj serwis bazy danych SQLite
+// --- Baza danych SQLite ---
 builder.Services.AddDbContext<InvestmentContext>(options =>
     options.UseSqlite("Data Source=investments.db"));
 
-// Dodaj kontrolery
+// --- Kontrolery ---
 builder.Services.AddControllers();
 
-// Dodajemy CORS
+// --- CORS ---
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend",
-        policy => policy.WithOrigins("http://localhost:4200")
-                        .AllowAnyHeader()
-                        .AllowAnyMethod());
+    options.AddPolicy("AllowFrontend", policy =>
+        policy.WithOrigins(
+                "http://localhost:4200",                // lokalny Angular
+                "https://osin99.github.io")             // GitHub Pages
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+        );
 });
 
-// Swagger
+// --- Swagger ---
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -31,21 +33,19 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Używamy CORS (musi być przed MapControllers)
+// --- Użycie CORS (przed MapControllers) ---
 app.UseCors("AllowFrontend");
 
-// Środowisko deweloperskie – uruchom Swaggera
+// --- Swagger tylko w Dev ---
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
 
-app.MapControllers();  // <-- To uruchamia kontrolery API
+app.MapControllers();
 
 app.Run();
