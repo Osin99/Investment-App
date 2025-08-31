@@ -1,18 +1,15 @@
-# runtime
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-WORKDIR /app
-EXPOSE 8080
-ENV ASPNETCORE_URLS=http://+:5000
-
 # build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY InvestmentApi/ InvestmentApi/
-RUN dotnet restore InvestmentApi/InvestmentApi.csproj
-RUN dotnet publish InvestmentApi/InvestmentApi.csproj -c Release -o /app/publish
+COPY ["InvestmentApi.csproj","./"]
+RUN dotnet restore
+COPY . .
+RUN dotnet publish -c Release -o /app/publish
 
-# final
-FROM base AS final
+# runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
+# Render wystawia zmienną PORT – musimy na niej nasłuchiwać
+ENV ASPNETCORE_URLS=http://0.0.0.0:${PORT}
 COPY --from=build /app/publish .
-ENTRYPOINT ["dotnet", "InvestmentApi.dll"]
+CMD ["dotnet", "InvestmentApi.dll"]
