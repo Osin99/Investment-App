@@ -13,3 +13,4 @@ WORKDIR /app
 ENV ASPNETCORE_URLS=http://0.0.0.0:${PORT}
 COPY --from=build /app/publish .
 CMD ["dotnet", "InvestmentApi.dll"]
+CMD ["sh","-c","dotnet ... --urls http://0.0.0.0:$PORT"]

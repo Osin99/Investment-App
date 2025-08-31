@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface Investment {
   id: number;
@@ -16,11 +17,10 @@ export interface InvestmentSummary {
   totalInvested: number;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class InvestmentService {
-  private apiUrl = 'http://localhost:5247/api/investments';
+  private baseUrl = environment.apiBaseUrl;                // np. https://xxx.onrender.com
+  private apiUrl  = `${this.baseUrl}/api/investments`;     // pełny HTTPS w produkcji
 
   constructor(private http: HttpClient) {}
 

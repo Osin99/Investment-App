@@ -5,28 +5,27 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- Baza danych SQLite ---
+// DB
 builder.Services.AddDbContext<InvestmentContext>(options =>
     options.UseSqlite("Data Source=investments.db"));
 
-// --- Kontrolery ---
+// Controllers
 builder.Services.AddControllers();
 
-// --- CORS ---
+// CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy
-            .WithOrigins(
-                "http://localhost:4200",          // lokalny Angular
-                "https://osin99.github.io"        // GitHub Pages
+        policy.WithOrigins(
+                "https://osin99.github.io",   // GH Pages (origin to tylko host, ścieżka nie gra roli)
+                "http://localhost:4200"       // dev
             )
             .AllowAnyHeader()
             .AllowAnyMethod()
         );
 });
 
-// --- Swagger ---
+// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -35,28 +34,33 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// --- CORS (przed MapControllers) ---
+// Auto-migracja/utworzenie DB
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<InvestmentContext>();
+    db.Database.Migrate(); // lub EnsureCreated();
+}
+
 app.UseCors("AllowFrontend");
 
-// --- Swagger w Dev (lub włącz przez zmienną środowiskową SWAGGER__ENABLED=true) ---
-if (app.Environment.IsDevelopment() || 
+// Swagger w dev (lub ustaw zmienną SWAGGER__ENABLED=true)
+if (app.Environment.IsDevelopment() ||
     builder.Configuration.GetValue<bool>("SWAGGER__ENABLED", false))
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// --- HTTPS redirect tylko lokalnie (w kontenerze nie) ---
+// Bez HTTPS redirect w kontenerze
 if (app.Environment.IsDevelopment())
 {
     app.UseHttpsRedirection();
 }
 
 app.UseAuthorization();
-
 app.MapControllers();
 
-// --- Nasłuchiwanie na porcie Rendera ---
+// Render port
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 app.Urls.Add($"http://0.0.0.0:{port}");
 
