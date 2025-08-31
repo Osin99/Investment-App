@@ -1,6 +1,11 @@
 C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\bin\Debug\net8.0\appsettings.Development.json
 C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\bin\Debug\net8.0\appsettings.json
 C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\bin\Debug\net8.0\InvestmentApi.staticwebassets.endpoints.json
+C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\bin\Debug\net8.0\InvestmentApi.exe
+C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\bin\Debug\net8.0\InvestmentApi.deps.json
+C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\bin\Debug\net8.0\InvestmentApi.runtimeconfig.json
+C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\bin\Debug\net8.0\InvestmentApi.dll
+C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\bin\Debug\net8.0\InvestmentApi.pdb
 C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\bin\Debug\net8.0\Humanizer.dll
 C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\bin\Debug\net8.0\Microsoft.AspNetCore.OpenApi.dll
 C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\bin\Debug\net8.0\Microsoft.Bcl.AsyncInterfaces.dll
@@ -140,7 +145,6 @@ C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\obj\Debug\net8.0\InvestmentApi
 C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\obj\Debug\net8.0\InvestmentApi.csproj.CoreCompileInputs.cache
 C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\obj\Debug\net8.0\InvestmentApi.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\obj\Debug\net8.0\InvestmentApi.MvcApplicationPartsAssemblyInfo.cache
-C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\obj\Debug\net8.0\InvestmentApi.sourcelink.json
 C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\obj\Debug\net8.0\rjimswa.dswa.cache.json
 C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
 C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
@@ -153,10 +157,5 @@ C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\obj\Debug\net8.0\Investme.FFB0
 C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\obj\Debug\net8.0\InvestmentApi.dll
 C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\obj\Debug\net8.0\refint\InvestmentApi.dll
 C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\obj\Debug\net8.0\InvestmentApi.pdb
-C:\users\Osin\desktop\InwestmentApp\InvestmentApi\bin\Debug\net8.0\InvestmentApi.deps.json
-C:\users\Osin\desktop\InwestmentApp\InvestmentApi\bin\Debug\net8.0\InvestmentApi.runtimeconfig.json
-C:\users\Osin\desktop\InwestmentApp\InvestmentApi\bin\Debug\net8.0\InvestmentApi.dll
-C:\users\Osin\desktop\InwestmentApp\InvestmentApi\bin\Debug\net8.0\InvestmentApi.pdb
-C:\users\Osin\desktop\InwestmentApp\InvestmentApi\obj\Debug\net8.0\InvestmentApi.genruntimeconfig.cache
-C:\users\Osin\desktop\InwestmentApp\InvestmentApi\obj\Debug\net8.0\ref\InvestmentApi.dll
-C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\bin\Debug\net8.0\InvestmentApi.exe
+C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\obj\Debug\net8.0\InvestmentApi.genruntimeconfig.cache
+C:\Users\Osin\Desktop\InwestmentApp\InvestmentApi\obj\Debug\net8.0\ref\InvestmentApi.dll
