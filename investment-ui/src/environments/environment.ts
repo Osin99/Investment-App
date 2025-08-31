@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'https://investment-app-0ebf.onrender.com' // lokalne API
+  apiBaseUrl: 'http://localhost:5247' // lokalne API
 };
 
 //http://localhost:5247ng buid
