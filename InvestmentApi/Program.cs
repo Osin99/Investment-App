@@ -1,17 +1,20 @@
 using System.IO;
 using InvestmentApi.Data;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- DB: ścieżka z ENV albo /data/investments.db (dla Render) ---
+// --- Logging do konsoli (przydatne na Render) ---
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+// --- DB: ENV(DB_PATH) lub /data/investments.db ---
 var dbPath = Environment.GetEnvironmentVariable("DB_PATH") ?? "/data/investments.db";
 var dbDir  = Path.GetDirectoryName(dbPath);
 if (!string.IsNullOrWhiteSpace(dbDir))
 {
-    Directory.CreateDirectory(dbDir); // upewnij się, że katalog istnieje
+    Directory.CreateDirectory(dbDir); // upewnij się, że katalog na DB istnieje
 }
 builder.Services.AddDbContext<InvestmentContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
@@ -41,16 +44,16 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// --- Auto-migracja/utworzenie DB ---
+// --- Utworzenie bazy (bez migracji) ---
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<InvestmentContext>();
-    db.Database.Migrate(); // lub EnsureCreated();
+    db.Database.EnsureCreated(); // wariant A: tworzymy plik/tabele jeśli brak
 }
 
 app.UseCors("AllowFrontend");
 
-// --- Swagger w Dev (lub przez SWAGGER__ENABLED=true) ---
+// --- Swagger tylko w Dev (lub gdy SWAGGER__ENABLED=true) ---
 if (app.Environment.IsDevelopment() ||
     builder.Configuration.GetValue<bool>("SWAGGER__ENABLED", false))
 {
