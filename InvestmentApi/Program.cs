@@ -7,6 +7,9 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("InvestmentConnection")
     ?? throw new InvalidOperationException("Missing InvestmentConnection connection string.");
 
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? ["http://localhost:4200", "http://127.0.0.1:4200"];
+
 builder.Services.AddDbContext<InvestmentContext>(options =>
     options.UseSqlite(connectionString));
 
@@ -15,7 +18,7 @@ builder.Services.AddControllers();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
-        policy => policy.WithOrigins("http://localhost:4200")
+        policy => policy.WithOrigins(allowedOrigins)
                         .AllowAnyHeader()
                         .AllowAnyMethod());
 });
