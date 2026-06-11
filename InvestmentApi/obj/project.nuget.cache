@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "y89VtdroCRo=",
+  "dgSpecHash": "KM7ULwlKVZM=",
   "success": true,
-  "projectFilePath": "C:\\Users\\Osin\\Desktop\\InwestmentApp\\InvestmentApi\\InvestmentApi.csproj",
+  "projectFilePath": "C:\\Users\\Osin\\Desktop\\Investment-App\\InvestmentApi\\InvestmentApi.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Osin\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\Osin\\.nuget\\packages\\microsoft.aspnetcore.openapi\\8.0.17\\microsoft.aspnetcore.openapi.8.0.17.nupkg.sha512",
