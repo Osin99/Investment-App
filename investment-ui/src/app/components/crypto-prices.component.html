@@ -1,9 +1,0 @@
-<h3>📈 Ceny kryptowalut (USD)</h3>
-<ul *ngIf="prices">
-  <li>Bitcoin: {{ prices.bitcoin.usd | number:'1.2-2' }} PLN</li>
-  <li>Ethereum: {{ prices.ethereum.usd | number:'1.2-2' }} USD</li>
-  <li>Dogecoin: {{ prices.dogecoin.usd | number:'1.2-2' }} USD</li>
-  <li>Dogecoin: {{ prices.ripple.usd | number:'1.2-2' }} USD</li>
-</ul>
-
-<div *ngIf="!prices">⏳ Ładowanie danych...</div>

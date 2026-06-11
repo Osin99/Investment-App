@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { InvestmentService } from '../../services/investment.service';
-import { CryptoService } from '../../services/crypto.service';
+import { InvestmentValuationService } from '../../services/investment-valuation.service';
 
 @Component({
   selector: 'app-investment-summary-box',
@@ -16,27 +16,28 @@ export class InvestmentSummaryBoxComponent implements OnInit {
 
   constructor(
     private investmentService: InvestmentService,
-    private cryptoService: CryptoService
+    private investmentValuationService: InvestmentValuationService
   ) {}
 
   ngOnInit(): void {
-    this.investmentService.getInvestmentSummary().subscribe(summary => {
-      const symbols = summary.map(s => s.symbol.toLowerCase());
-
-      this.cryptoService.getPrices(symbols).subscribe(prices => {
-        this.totalInvested = 0;
-        this.totalMarketValue = 0;
-
-        summary.forEach(s => {
-          const currentPrice = prices[s.symbol.toLowerCase()] || 0;
-          const marketValue = s.totalAmount * currentPrice;
-
-          this.totalInvested += s.totalInvested;
-          this.totalMarketValue += marketValue;
+    this.investmentService.getInvestmentSummary().subscribe({
+      next: summary => {
+        this.investmentValuationService.getValuations(summary).subscribe({
+          next: valuations => {
+            this.totalInvested = valuations.reduce((total, valuation) => total + valuation.totalInvested, 0);
+            this.totalMarketValue = valuations.reduce((total, valuation) => total + valuation.marketValue, 0);
+            this.isLoading = false;
+          },
+          error: err => {
+            console.error('Błąd podczas wyceny inwestycji:', err);
+            this.isLoading = false;
+          }
         });
-
+      },
+      error: err => {
+        console.error('Błąd pobierania podsumowania inwestycji:', err);
         this.isLoading = false;
-      });
+      }
     });
   }
 
@@ -45,8 +46,8 @@ export class InvestmentSummaryBoxComponent implements OnInit {
   }
 
   get profitPercent(): string {
-  const invested = this.totalInvested || 1; // zabezpieczenie
-  const percent = (this.profit / invested) * 100;
-  return percent.toFixed(2);
-}
+    const invested = this.totalInvested || 1;
+    const percent = (this.profit / invested) * 100;
+    return percent.toFixed(2);
+  }
 }

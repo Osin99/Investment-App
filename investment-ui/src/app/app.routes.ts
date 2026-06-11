@@ -5,18 +5,15 @@ import { DashboardComponent } from './views/dashboard.component';
 
 export const routes: Routes = [
   { path: '', component: DashboardComponent },
-  {
-    path: '',
-    component: InvestmentListComponent
-  },
+  { path: 'lista', component: InvestmentListComponent },
   {
     path: 'dodaj',
-     loadComponent: () =>
-    import('./components/investment-form.component').then(m => m.InvestmentFormComponent)
+    loadComponent: () =>
+      import('./components/investment-form.component').then(m => m.InvestmentFormComponent)
   },
   {
     path: 'edytuj/:id',
     loadComponent: () =>
-    import('./components/investment-form.component').then(m => m.InvestmentFormComponent)
+      import('./components/investment-form.component').then(m => m.InvestmentFormComponent)
   }
 ];

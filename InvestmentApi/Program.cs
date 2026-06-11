@@ -1,19 +1,17 @@
 using InvestmentApi.Data;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Dodaj serwis bazy danych SQLite
-builder.Services.AddDbContext<InvestmentContext>(options =>
-    options.UseSqlite("Data Source=investments.db"));
+var connectionString = builder.Configuration.GetConnectionString("InvestmentConnection")
+    ?? throw new InvalidOperationException("Missing InvestmentConnection connection string.");
 
-// Dodaj kontrolery
+builder.Services.AddDbContext<InvestmentContext>(options =>
+    options.UseSqlite(connectionString));
+
 builder.Services.AddControllers();
 
-// Dodajemy CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
@@ -22,7 +20,6 @@ builder.Services.AddCors(options =>
                         .AllowAnyMethod());
 });
 
-// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -31,21 +28,22 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
-// Używamy CORS (musi być przed MapControllers)
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<InvestmentContext>();
+    context.Database.Migrate();
+}
+
 app.UseCors("AllowFrontend");
 
-// Środowisko deweloperskie – uruchom Swaggera
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
-app.MapControllers();  // <-- To uruchamia kontrolery API
+app.MapControllers();
 
 app.Run();

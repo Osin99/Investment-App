@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, map, of } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, catchError, map, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -8,24 +8,26 @@ import { Observable, map, of } from 'rxjs';
 export class CryptoService {
   constructor(private http: HttpClient) {}
 
-  // 🔁 Pobiera ceny dla podanych symboli lub domyślnych, w PLN
   getPrices(symbols: string[] = ['BTC', 'ETH', 'SOL']): Observable<{ [symbol: string]: number }> {
-    const ids = symbols.map(s => this.mapToCoinGeckoId(s)).join(',');
+    const normalizedSymbols = symbols.map(s => s.toUpperCase());
+    const ids = normalizedSymbols.map(s => this.mapToCoinGeckoId(s)).join(',');
     const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=pln`;
 
-    return this.http.get<any>(url).pipe(
+    return this.http.get<Record<string, { pln: number }>>(url).pipe(
       map(response => {
         const result: { [symbol: string]: number } = {};
-        for (const symbol of symbols) {
+
+        for (const symbol of normalizedSymbols) {
           const id = this.mapToCoinGeckoId(symbol);
           result[symbol.toLowerCase()] = response[id]?.pln ?? 0;
         }
+
         return result;
-      })
+      }),
+      catchError(error => this.handleError(error))
     );
   }
 
-  // 🔄 Mapuje symbol (np. BTC) na ID w CoinGecko (np. bitcoin)
   private mapToCoinGeckoId(symbol: string): string {
     const map: { [key: string]: string } = {
       BTC: 'bitcoin',
@@ -37,9 +39,13 @@ export class CryptoService {
       ADA: 'cardano',
       LINK: 'chainlink',
       USDT: 'tether'
-      // dodaj więcej w razie potrzeby
     };
 
-    return map[symbol.toUpperCase()] || symbol.toLowerCase();
+    return map[symbol] || symbol.toLowerCase();
+  }
+
+  private handleError(error: HttpErrorResponse): Observable<Record<string, number>> {
+    console.error('Błąd pobierania cen kryptowalut:', error);
+    return of({} as Record<string, number>);
   }
 }

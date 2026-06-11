@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { ChartType, ChartConfiguration } from 'chart.js';
 import { InvestmentService } from '../../services/investment.service';
-import { CryptoService } from '../../services/crypto.service';
+import { InvestmentValuationService } from '../../services/investment-valuation.service';
 
 @Component({
   selector: 'app-investment-chart',
@@ -28,42 +28,41 @@ export class InvestmentChartComponent implements OnInit {
 
   constructor(
     private investmentService: InvestmentService,
-    private cryptoService: CryptoService
+    private investmentValuationService: InvestmentValuationService
   ) {}
 
   ngOnInit(): void {
-    this.investmentService.getInvestmentSummary().subscribe(summary => {
-      const symbols = summary.map(s => s.symbol);
+    this.investmentService.getInvestmentSummary().subscribe({
+      next: summary => {
+        this.investmentValuationService.getValuations(summary).subscribe({
+          next: valuations => {
+            const labels = valuations.map(v => v.symbol.toUpperCase());
+            const data = valuations.map(v => v.profit);
+            const colors = valuations.map(v => v.profit >= 0 ? 'rgba(75, 192, 192, 0.8)' : 'rgba(255, 99, 132, 0.8)');
 
-      this.cryptoService.getPrices(symbols).subscribe(prices => {
-        const labels: string[] = [];
-        const data: number[] = [];
-        const colors: string[] = [];
+            this.chartData = {
+              labels,
+              datasets: [
+                {
+                  label: 'Zysk / Strata (PLN)',
+                  data,
+                  backgroundColor: colors
+                }
+              ]
+            };
 
-        summary.forEach(s => {
-          const symbol = s.symbol.toUpperCase();
-          const currentPrice = prices[symbol.toLowerCase()] || 0;
-          const marketValue = s.totalAmount * currentPrice;
-          const profit = marketValue - s.totalInvested;
-
-          labels.push(symbol);
-          data.push(profit);
-          colors.push(profit >= 0 ? 'rgba(75, 192, 192, 0.8)' : 'rgba(255, 99, 132, 0.8)');
+            this.isLoading = false;
+          },
+          error: err => {
+            console.error('Błąd pobierania danych wykresu:', err);
+            this.isLoading = false;
+          }
         });
-
-        this.chartData = {
-          labels,
-          datasets: [
-            {
-              label: 'Zysk / Strata (PLN)',
-              data,
-              backgroundColor: colors
-            }
-          ]
-        };
-
+      },
+      error: err => {
+        console.error('Błąd pobierania podsumowania dla wykresu:', err);
         this.isLoading = false;
-      });
+      }
     });
   }
 }

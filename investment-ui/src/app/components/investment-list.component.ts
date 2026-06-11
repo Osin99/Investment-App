@@ -1,53 +1,57 @@
 import { Component, OnInit } from "@angular/core";
 import { InvestmentService, Investment } from "../services/investment.service";
-import { DatePipe, NgFor, NgIf, DecimalPipe } from '@angular/common';
+import { DatePipe, NgFor, DecimalPipe, NgIf } from '@angular/common';
 import { Router } from '@angular/router';
 
-
-
-
-// Dekorator @Component opisuje konfigurację komponentu
 @Component({
-  selector: 'app-investment-list',//Nazwa tagu HTML do użycia, np. <app-investment-list>
-  standalone: true,// To jest komponent bezmodułowy
-  templateUrl: './investment-list.component.html',// Szablon HTML
-  styleUrls: ['./investment-list.component.css'],// Styl
-  imports: [DatePipe, NgFor, DecimalPipe] // 👉 dodajemy DatePipe i inne używane dyrektywy
+  selector: 'app-investment-list',
+  standalone: true,
+  templateUrl: './investment-list.component.html',
+  styleUrls: ['./investment-list.component.css'],
+  imports: [DatePipe, NgFor, DecimalPipe, NgIf]
 })
-export class InvestmentListComponent implements OnInit{
-  
+export class InvestmentListComponent implements OnInit {
+  investments: Investment[] = [];
+  isLoading = true;
+  errorMessage = '';
 
-    // Tablica, która będzie przechowywać inwestycje pobrane z backendu
-    investments: Investment[]=[];
-
-    // Konstruktor – Angular wstrzykuje nasz serwis do zmiennej `investmentService`
-   constructor(
+  constructor(
     private investmentService: InvestmentService,
     private router: Router
   ) {}
 
-
-    // ngOnInit() to metoda, która wykonuje się automatycznie po załadowaniu komponentu
-    ngOnInit(): void {
-      // Wywołujemy metodę z serwisu, która zwraca Observable
-      this.investmentService.getInvestments().subscribe({
-        next:(data) => this.investments = data,// Gdy przyjdą dane – przypisz je do zmiennej
-        error: (err) => console.error("Błąd pobierania inwestycji",err)// Obsługa błędu+
-      });
-    }
-      goToForm() {
-    this.router.navigate(['/dodaj']);
-  }
-  deleteInvestment(id: number): void{
-    if(!confirm("Czy na pewno chcesz usunąć tę inwestycję?"))return;
-    this.investmentService.deleteInvestment(id).subscribe({
-      next:()=>{
-        this.investments = this.investments.filter(i => i.id !==id)
+  ngOnInit(): void {
+    this.investmentService.getInvestments().subscribe({
+      next: data => {
+        this.investments = data;
+        this.isLoading = false;
       },
-      error: err => console.error("Błąd usuwania", err)
+      error: err => {
+        this.errorMessage = 'Nie udało się pobrać inwestycji.';
+        console.error('Błąd pobierania inwestycji', err);
+        this.isLoading = false;
+      }
     });
   }
-  editInvestment(id: number){
-    this.router.navigate(['/edytuj', id])// przekierowanie z ID inwestycji
+
+  goToForm(): void {
+    this.router.navigate(['/dodaj']);
+  }
+
+  deleteInvestment(id: number): void {
+    if (!confirm('Czy na pewno chcesz usunąć tę inwestycję?')) {
+      return;
+    }
+
+    this.investmentService.deleteInvestment(id).subscribe({
+      next: () => {
+        this.investments = this.investments.filter(i => i.id !== id);
+      },
+      error: err => console.error('Błąd usuwania', err)
+    });
+  }
+
+  editInvestment(id: number): void {
+    this.router.navigate(['/edytuj', id]);
   }
 }
