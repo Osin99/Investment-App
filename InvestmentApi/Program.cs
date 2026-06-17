@@ -1,4 +1,5 @@
 using InvestmentApi.Data;
+using InvestmentApi.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
@@ -7,11 +8,19 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("InvestmentConnection")
     ?? throw new InvalidOperationException("Missing InvestmentConnection connection string.");
 
-var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-    ?? ["http://localhost:4200", "http://127.0.0.1:4200"];
-
+// PostgreSQL (production): uncomment and set Database:Provider = "Postgres" in appsettings
+// var dbProvider = builder.Configuration["Database:Provider"];
+// if (dbProvider == "Postgres")
+//     builder.Services.AddDbContext<InvestmentContext>(options => options.UseNpgsql(connectionString));
+// else
 builder.Services.AddDbContext<InvestmentContext>(options =>
     options.UseSqlite(connectionString));
+
+builder.Services.AddScoped<IPriceService, PriceService>();
+builder.Services.AddScoped<IPortfolioHistoryService, PortfolioHistoryService>();
+
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+    ?? ["http://localhost:4200", "http://127.0.0.1:4200"];
 
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();

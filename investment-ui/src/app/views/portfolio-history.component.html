@@ -64,8 +64,8 @@
   <section class='glass-card mt-4'>
     <div class='panel-title'>
       <div>
-        <h3>Historia wpłat</h3>
-        <p class='panel-subtitle'>Aktualny wynik każdej wpłaty według dzisiejszych cen</p>
+        <h3>Historia transakcji</h3>
+        <p class='panel-subtitle'>Aktualny wynik każdej transakcji według dzisiejszych cen</p>
       </div>
     </div>
 
@@ -77,6 +77,7 @@
         <thead class='table-dark'>
           <tr>
             <th>Data</th>
+            <th>Typ</th>
             <th>Symbol</th>
             <th>Ilość z wpłaty</th>
             <th>Cena zakupu</th>
@@ -89,6 +90,11 @@
         <tbody>
           <tr *ngFor='let valuation of transactionValuations'>
             <td>{{ valuation.buyDate }} <small class='text-muted'>#{{ valuation.id }}</small></td>
+            <td>
+              <span class="badge" [class.bg-success]="valuation.type === 0" [class.bg-warning]="valuation.type === 1">
+                {{ valuation.type === 1 ? 'Sprzedaż' : 'Zakup' }}
+              </span>
+            </td>
             <td class='fw-bold'>{{ valuation.symbol | uppercase }}</td>
             <td>{{ valuation.amount | number:'1.4-8' }}</td>
             <td>{{ valuation.buyPrice | currency:'PLN':'symbol':'1.2-2' }}</td>

@@ -2,9 +2,15 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+export enum TransactionType {
+  Buy = 0,
+  Sell = 1
+}
+
 export interface Investment {
   id: number;
   symbol: string;
+  type: TransactionType;
   amount: number;
   buyPrice: number;
   buyDate: string;
@@ -30,6 +36,7 @@ export interface PortfolioHistoryPoint {
 export interface PurchaseHistory {
   id: number;
   symbol: string;
+  type: TransactionType;
   amount: number;
   buyPrice: number;
   buyDate: string;

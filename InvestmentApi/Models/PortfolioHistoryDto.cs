@@ -16,6 +16,7 @@ namespace InvestmentApi.Models
     {
         public int Id { get; set; }
         public string Symbol { get; set; } = string.Empty;
+        public TransactionType Type { get; set; }
         public decimal Amount { get; set; }
         public decimal BuyPrice { get; set; }
         public string BuyDate { get; set; } = string.Empty;

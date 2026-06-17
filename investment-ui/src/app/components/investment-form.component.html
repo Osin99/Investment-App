@@ -13,6 +13,20 @@
   <form #f="ngForm" (ngSubmit)="submitForm()" class="needs-validation" novalidate>
     <div class="row g-4">
       <div class="col-md-6">
+        <label for="type" class="form-label">Typ transakcji</label>
+        <select
+          id="type"
+          name="type"
+          class="form-select"
+          [(ngModel)]="form.type"
+          required>
+          <option *ngFor="let option of transactionTypes" [ngValue]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="col-md-6">
         <label for="symbol" class="form-label">Symbol</label>
         <input
           type="text"
@@ -39,7 +53,7 @@
       </div>
 
       <div class="col-md-6">
-        <label for="buyPrice" class="form-label">Cena zakupu</label>
+        <label for="buyPrice" class="form-label">{{ form.type === 1 ? 'Cena sprzedaży' : 'Cena zakupu' }}</label>
         <input
           type="number"
           id="buyPrice"

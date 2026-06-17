@@ -11,6 +11,7 @@
     <thead class="table-dark">
       <tr>
         <th>ID</th>
+        <th>Typ</th>
         <th>Symbol</th>
         <th>Ilość</th>
         <th>Cena zakupu</th>
@@ -21,6 +22,11 @@
     <tbody>
       <tr *ngFor="let investment of investments">
         <td>{{ investment.id }}</td>
+        <td>
+          <span class="badge" [class.bg-success]="investment.type === 0" [class.bg-warning]="investment.type === 1">
+            {{ investment.type === 1 ? 'Sprzedaż' : 'Zakup' }}
+          </span>
+        </td>
         <td class="fw-bold">{{ investment.symbol | uppercase }}</td>
         <td>{{ investment.amount | number: '1.4-8' }}</td>
         <td>{{ investment.buyPrice | currency:'PLN':'symbol':'1.2-2' }}</td>

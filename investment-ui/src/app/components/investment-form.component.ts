@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { NgIf } from '@angular/common';
-import { Investment, InvestmentService } from '../services/investment.service';
+import { NgIf, NgFor } from '@angular/common';
+import { Investment, InvestmentService, TransactionType } from '../services/investment.service';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 
 @Component({
@@ -9,16 +9,22 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
   standalone: true,
   templateUrl: './investment-form.component.html',
   styleUrls: ['./investment-form.component.css'],
-  imports: [FormsModule, NgIf, RouterModule]
+  imports: [FormsModule, NgIf, NgFor, RouterModule]
 })
 export class InvestmentFormComponent implements OnInit {
   form: Investment = {
     id: 0,
     symbol: '',
+    type: TransactionType.Buy,
     amount: 0,
     buyPrice: 0,
     buyDate: ''
   };
+
+  readonly transactionTypes = [
+    { value: TransactionType.Buy, label: 'Zakup' },
+    { value: TransactionType.Sell, label: 'Sprzedaż' }
+  ];
 
   errorMessage = '';
   isSaving = false;
@@ -45,6 +51,7 @@ export class InvestmentFormComponent implements OnInit {
   submitForm(): void {
     this.errorMessage = '';
     this.isSaving = true;
+    this.form.symbol = this.form.symbol.trim().toUpperCase();
 
     if (this.form.id && this.form.id > 0) {
       this.investmentService.updateInvestment(this.form.id, this.form).subscribe({

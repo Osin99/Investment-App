@@ -4,11 +4,12 @@ import { RouterLink } from '@angular/router';
 import { NgChartsModule } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { CryptoService } from '../services/crypto.service';
-import { Investment, InvestmentService, PortfolioHistory } from '../services/investment.service';
+import { Investment, InvestmentService, PortfolioHistory, TransactionType } from '../services/investment.service';
 
 interface TransactionValuation {
   id: number;
   symbol: string;
+  type: TransactionType;
   amount: number;
   buyPrice: number;
   buyDate: string;
@@ -166,6 +167,7 @@ export class PortfolioHistoryComponent implements OnInit {
     return {
       id: investment.id,
       symbol: investment.symbol,
+      type: investment.type ?? TransactionType.Buy,
       amount: investment.amount,
       buyPrice: investment.buyPrice,
       buyDate: investment.buyDate,
