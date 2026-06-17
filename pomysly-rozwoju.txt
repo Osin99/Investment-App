@@ -1,0 +1,39 @@
+Pomysły na rozwój Investment App
+
+1. Dashboard z rzeczywistym zyskiem portfela
+Opis:
+Rozbudować stronę główną o bardziej szczegółowe KPI portfela:
+- całkowity zysk/strata w PLN,
+- zysk/strata procentowa,
+- największy zysk na jednej kryptowalucie,
+- największa strata na jednej kryptowalucie,
+- aktualna wartość portfela,
+- łączna suma wpłaconych środków.
+
+2. Historia zakupów i wykres zmian wartości portfela
+Opis:
+Dodać historię wszystkich zakupów/sprzedaży lub przynajmniej zakupów inwestycji.
+Na tej podstawie można liczyć:
+- łączną wartość portfela w czasie,
+- średnią cenę zakupu,
+- zrealizowany/niezrealizowany zysk,
+- wykres zmian wartości portfela.
+
+3. Obsługa wielu użytkowników
+Opis:
+Dodać logowanie/rejestrację i przypisać inwestycje do konkretnego użytkownika.
+Backend powinien filtrować dane po użytkowniku, żeby każdy widział tylko swój portfel.
+
+4. Automatyczne pobieranie aktualnych cen z API
+Opis:
+Dodać odświeżanie cen kryptowalut w tle, np. co 30 lub 60 sekund.
+Najlepiej zrobić cache po stronie backendu, żeby nie wysyłać zbyt wielu zapytań do CoinGecko.
+
+5. Lepszy formularz inwestycji
+Opis:
+Rozbudować formularz dodawania i edycji inwestycji:
+- walidacja po stronie frontendu,
+- komunikaty błędów,
+- potwierdzenie zapisu,
+- potwierdzenie usunięcia,
+- możliwość edycji inline z poziomu listy.

@@ -1,34 +1,25 @@
-<div class="card h-100 shadow-sm">
-  <div class="card-header bg-light">
+<div *ngIf="!isLoading">
+  <div class="metric-card">
+    <p class="metric-label">Łącznie zainwestowano</p>
+    <p class="metric-value">{{ totalInvested | currency:'PLN':'symbol':'1.2-2' }}</p>
+    <p class="metric-note">Skumulowany kapitał</p>
   </div>
 
-  <div class="card-body" *ngIf="!isLoading">
-    <p class="mb-2">
-      <strong>Łącznie zainwestowano:</strong>
-      <span class="text-dark ms-1">
-        {{ totalInvested | currency:'PLN':'symbol':'1.2-2' }}
-      </span>
+  <div class="metric-card mt-4">
+    <p class="metric-label">Aktualna wartość rynkowa</p>
+    <p class="metric-value">{{ totalMarketValue | currency:'PLN':'symbol':'1.2-2' }}</p>
+    <p class="metric-note">Wycena portfela</p>
+  </div>
+
+  <div class="metric-card mt-4">
+    <p class="metric-label">Zysk / strata</p>
+    <p class="metric-value" [ngClass]="profit >= 0 ? 'text-success' : 'text-danger'">
+      {{ profit | currency:'PLN':'symbol':'1.2-2' }}
     </p>
-
-    <p class="mb-2">
-      <strong>Aktualna wartość (rynkowa):</strong>
-      <span class="text-dark ms-1">
-        {{ totalMarketValue | currency:'PLN':'symbol':'1.2-2' }}
-      </span>
-    </p>
-
-  <p class="mt-3 fs-5">
-  <strong>Zysk / strata:</strong>
-  <span [ngClass]="profit >= 0 ? 'text-success' : 'text-danger'" class="ms-2">
-    <i [ngClass]="profit >= 0 ? 'bi bi-arrow-up-circle' : 'bi bi-arrow-down-circle'"></i>
-    {{ profit | currency:'PLN':'symbol':'1.2-2' }}
-    ({{ profitPercent }}%)
-  </span>
-</p>
-
+    <p class="metric-note">{{ profitPercent }}%</p>
   </div>
+</div>
 
-  <div class="card-body" *ngIf="isLoading">
-    <p class="text-muted">🔄 Ładowanie danych...</p>
-  </div>
+<div *ngIf="isLoading" class="text-muted">
+  Ładowanie danych...
 </div>

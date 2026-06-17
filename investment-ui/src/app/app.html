@@ -1,16 +1,14 @@
-<!-- app.component.html -->
-<div class="container mt-4">
-  <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
-    <a class="navbar-brand" href="#">💼 InvestmentApp</a>
-    <div class="collapse navbar-collapse">
-      <ul class="navbar-nav mr-auto">
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/">Lista inwestycji</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" routerLink="/dodaj">Dodaj inwestycję</a>
-        </li>
-      </ul>
+<div class="app-shell">
+  <nav class="app-nav">
+    <a class="nav-brand" routerLink="/">
+      <span class="nav-logo">IA</span>
+      <span>InvestmentApp</span>
+    </a>
+
+    <div class="nav-links">
+      <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+      <a class="nav-link" routerLink="/dodaj" routerLinkActive="active">Dodaj inwestycję</a>
+      <a class="nav-link" routerLink="/historia" routerLinkActive="active">Historia portfela</a>
     </div>
   </nav>
 

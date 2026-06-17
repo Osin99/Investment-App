@@ -1,24 +1,32 @@
-<ul class="list-group" *ngIf="!isLoading">
-  <li class="list-group-item" *ngFor="let s of summaries">
-    <div class="d-flex justify-content-between align-items-center">
+<div class="list-group" *ngIf="!isLoading">
+  <div class="list-group-item" *ngFor="let s of summaries">
+    <div class="d-flex justify-content-between align-items-center gap-3">
       <div>
-        <strong>{{ s.symbol }}</strong>
-        ({{ s.totalAmount | number:'1.4-8' }} szt.)
-        <br />
-        <span class="text-muted small">
-          Wpłacono: {{ s.totalInvested | currency:'PLN':'symbol':'1.2-2' }} |
+        <strong class="fs-5">{{ s.symbol | uppercase }}</strong>
+        <div class="text-muted small">
+          Ilość: {{ s.totalAmount | number:'1.4-8' }}
+        </div>
+        <div class="text-muted small">
+          Wpłacono: {{ s.totalInvested | currency:'PLN':'symbol':'1.2-2' }}
+        </div>
+        <div class="text-muted small">
           Rynkowo: {{ s.marketValue | currency:'PLN':'symbol':'1.2-2' }}
-        </span>
+        </div>
       </div>
-      <div>
+
+      <div class="text-end">
         <span
           [ngClass]="getProfit(s) >= 0 ? 'text-success' : 'text-danger'"
-          class="fw-bold"
+          class="fw-bold fs-5"
         >
-          <i [ngClass]="getProfit(s) >= 0 ? 'bi bi-arrow-up' : 'bi bi-arrow-down'"></i>
           {{ getProfitPercent(s) }}%
         </span>
+        <div class="text-muted small">{{ getProfit(s) | currency:'PLN':'symbol':'1.2-2' }}</div>
       </div>
     </div>
-  </li>
-</ul>
+  </div>
+</div>
+
+<div *ngIf="isLoading" class="text-muted">
+  Ładowanie danych...
+</div>

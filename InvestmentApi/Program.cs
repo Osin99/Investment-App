@@ -14,6 +14,7 @@ builder.Services.AddDbContext<InvestmentContext>(options =>
     options.UseSqlite(connectionString));
 
 builder.Services.AddControllers();
+builder.Services.AddHttpClient();
 
 builder.Services.AddCors(options =>
 {

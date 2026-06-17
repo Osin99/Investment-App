@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { InvestmentService, Investment } from "../services/investment.service";
-import { DatePipe, NgFor, DecimalPipe, NgIf } from '@angular/common';
+import { CurrencyPipe, DatePipe, NgFor, DecimalPipe, NgIf, UpperCasePipe } from '@angular/common';
 import { Router } from '@angular/router';
 
 @Component({
@@ -8,7 +8,7 @@ import { Router } from '@angular/router';
   standalone: true,
   templateUrl: './investment-list.component.html',
   styleUrls: ['./investment-list.component.css'],
-  imports: [DatePipe, NgFor, DecimalPipe, NgIf]
+  imports: [DatePipe, NgFor, DecimalPipe, NgIf, CurrencyPipe, UpperCasePipe]
 })
 export class InvestmentListComponent implements OnInit {
   investments: Investment[] = [];

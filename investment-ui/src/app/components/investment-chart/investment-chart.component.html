@@ -1,24 +1,20 @@
-<div class="card">
-  <div class="card-header bg-light">
-    <strong>📊 Zysk / Strata wg kryptowaluty</strong>
+﻿<div class='glass-card chart-card h-100'>
+  <div class='panel-title'>
+    <div>
+      <h3>Zysk / strata</h3>
+      <p class='panel-subtitle'>Zysk lub strata według aktualnych cen</p>
+    </div>
   </div>
-  <div class="card-body" *ngIf="!isLoading">
+
+  <div *ngIf='!isLoading'>
     <canvas baseChart
-      [type]="chartType"
-      [data]="chartData"
-      [options]="{
-        responsive: true,
-        plugins: {
-          legend: { display: false }
-        },
-        scales: {
-          x: { title: { display: true, text: 'Kryptowaluta' } },
-          y: { title: { display: true, text: 'Zysk / Strata (PLN)' } }
-        }
-      }">
+      [type]='chartType'
+      [data]='chartData'
+      [options]='chartOptions'>
     </canvas>
   </div>
-  <div class="card-body" *ngIf="isLoading">
-    <p>🔄 Ładowanie wykresu...</p>
+
+  <div *ngIf='isLoading' class='text-muted'>
+    Ładowanie wykresu...
   </div>
 </div>

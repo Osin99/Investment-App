@@ -1,53 +1,89 @@
-<div class="container mt-4">
-  <!-- GÓRNE MENU -->
-  <div class="mb-3 border p-3 bg-light rounded">
-    <h4 class="m-0">📋 Portfel Inwestycyjny</h4>
+<section class="page-hero">
+  <p class="page-kicker">Crypto Portfolio OS</p>
+  <h1 class="page-title">Zarządzaj inwestycjami w nowoczesnym panelu</h1>
+  <p class="page-subtitle">
+    Śledź aktywa, zyski, straty i historię portfela w ciemnym interfejsie z gradientami.
+  </p>
+  <div class="hero-actions">
+    <button class="btn btn-primary" (click)="goToForm()">Dodaj inwestycję</button>
+    <a class="btn btn-outline-primary" routerLink="/historia">Zobacz historię portfela</a>
   </div>
+</section>
 
-  <!-- PRZYCISK DODAWANIA INWESTYCJI -->
-  <div class="mb-3">
-    <button class="btn btn-primary" (click)="goToForm()">➕ Dodaj inwestycję</button>
-  </div>
+<section class="metric-grid">
+  <article class="metric-card">
+    <p class="metric-label">Aktywa</p>
+    <p class="metric-value">Krypto</p>
+    <p class="metric-note">Portfel i pozycje w jednym miejscu</p>
+  </article>
 
-  <!-- UKŁAD 2-KOLUMNOWY: kursy + lista inwestycji -->
-  <div class="row">
-    <!-- LEWA KOLUMNA – kursy kryptowalut -->
-<div class="col-md-4 mb-3">
-  <app-investment-chart></app-investment-chart>
-</div>
+  <article class="metric-card">
+    <p class="metric-label">Wycena</p>
+    <p class="metric-value">PLN</p>
+    <p class="metric-note">Bieżąca wartość rynkowa</p>
+  </article>
 
-    <!-- PRAWA KOLUMNA – lista inwestycji -->
-    <div class="col-md-8 mb-3">
-      <div class="border p-3 rounded h-100">
-        <app-investment-list></app-investment-list>
+  <article class="metric-card">
+    <p class="metric-label">Historia</p>
+    <p class="metric-value">24/7</p>
+    <p class="metric-note">Dane dzienne i punkty zakupów</p>
+  </article>
+
+  <article class="metric-card">
+    <p class="metric-label">Tryb</p>
+    <p class="metric-value">Dark</p>
+    <p class="metric-note">Gradientowy, nowoczesny UI</p>
+  </article>
+</section>
+
+<section class="row g-4">
+  <div class="col-lg-4">
+    <div class="section-panel">
+      <div class="panel-title">
+        <div>
+          <h3>Zysk / strata</h3>
+          <p class="panel-subtitle">Wynik według kryptowaluty</p>
+        </div>
       </div>
+      <app-investment-chart></app-investment-chart>
     </div>
   </div>
 
-  <!-- PODSUMOWANIE INWESTYCJI -->
-  <div class="row mt-4">
-    <!-- LEWA KOLUMNA – szczegółowa lista inwestycji wg kryptowaluty -->
-    <div class="col-md-6 mb-3">
-      <div class="card h-100">
-        <div class="card-header bg-light">
-          <strong>📊 Twoje aktywa</strong>
-        </div>
-        <div class="card-body">
-          <app-investment-summary></app-investment-summary>
+  <div class="col-lg-8">
+    <div class="section-panel">
+      <div class="panel-title">
+        <div>
+          <h3>Zakupione aktywa</h3>
+          <p class="panel-subtitle">Edytuj lub usuwaj pozycje</p>
         </div>
       </div>
-    </div>
-
-    <!-- PRAWA KOLUMNA – podsumowanie finansowe -->
-    <div class="col-md-6 mb-3">
-      <div class="card h-100">
-        <div class="card-header bg-light">
-          <strong>💰 Podsumowanie finansowe</strong>
-        </div>
-        <div class="card-body">
-          <app-investment-summary-box></app-investment-summary-box>
-        </div>
-      </div>
+      <app-investment-list></app-investment-list>
     </div>
   </div>
-</div>
+</section>
+
+<section class="row g-4 mt-2">
+  <div class="col-lg-6">
+    <div class="section-panel">
+      <div class="panel-title">
+        <div>
+          <h3>Twoje aktywa</h3>
+          <p class="panel-subtitle">Podział według symbolu</p>
+        </div>
+      </div>
+      <app-investment-summary></app-investment-summary>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="section-panel">
+      <div class="panel-title">
+        <div>
+          <h3>Podsumowanie finansowe</h3>
+          <p class="panel-subtitle">Kapitał, wartość i wynik</p>
+        </div>
+      </div>
+      <app-investment-summary-box></app-investment-summary-box>
+    </div>
+  </div>
+</section>

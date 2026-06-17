@@ -2,10 +2,12 @@ import { Routes } from '@angular/router';
 import { InvestmentListComponent } from './components/investment-list.component';
 import { InvestmentFormComponent } from './components/investment-form.component';
 import { DashboardComponent } from './views/dashboard.component';
+import { PortfolioHistoryComponent } from './views/portfolio-history.component';
 
 export const routes: Routes = [
   { path: '', component: DashboardComponent },
   { path: 'lista', component: InvestmentListComponent },
+  { path: 'historia', component: PortfolioHistoryComponent },
   {
     path: 'dodaj',
     loadComponent: () =>
