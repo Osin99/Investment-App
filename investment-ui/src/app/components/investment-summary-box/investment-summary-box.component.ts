@@ -13,6 +13,7 @@ export class InvestmentSummaryBoxComponent implements OnInit {
   totalInvested = 0;
   totalMarketValue = 0;
   isLoading = true;
+  lastUpdateTime = '';
 
   constructor(
     private investmentService: InvestmentService,
@@ -26,6 +27,7 @@ export class InvestmentSummaryBoxComponent implements OnInit {
           next: valuations => {
             this.totalInvested = valuations.reduce((total, valuation) => total + valuation.totalInvested, 0);
             this.totalMarketValue = valuations.reduce((total, valuation) => total + valuation.marketValue, 0);
+            this.lastUpdateTime = new Date().toLocaleTimeString('pl-PL');
             this.isLoading = false;
           },
           error: err => {

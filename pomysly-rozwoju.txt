@@ -24,16 +24,16 @@ Opis:
 Dodać logowanie/rejestrację i przypisać inwestycje do konkretnego użytkownika.
 Backend powinien filtrować dane po użytkowniku, żeby każdy widział tylko swój portfel.
 
-4. Automatyczne pobieranie aktualnych cen z API
+4. Powiadomienia o zmianach cen
 Opis:
-Dodać odświeżanie cen kryptowalut w tle, np. co 30 lub 60 sekund.
-Najlepiej zrobić cache po stronie backendu, żeby nie wysyłać zbyt wielu zapytań do CoinGecko.
+Dodać system alertów/powiadomień:
+- powiadomienia push gdy cena spadnie/wzrośnie o X%,
+- email alerts dla ważnych zmian,
+- możliwość ustawienia progów alertów dla każdej inwestycji.
 
-5. Lepszy formularz inwestycji
+5. Export danych i raporty podatkowe
 Opis:
-Rozbudować formularz dodawania i edycji inwestycji:
-- walidacja po stronie frontendu,
-- komunikaty błędów,
-- potwierdzenie zapisu,
-- potwierdzenie usunięcia,
-- możliwość edycji inline z poziomu listy.
+Dodać funkcjonalność eksportu:
+- export portfela do CSV/PDF,
+- raport zysków/strat dla celów podatkowych,
+- podsumowanie roczne z podziałem na miesiące.

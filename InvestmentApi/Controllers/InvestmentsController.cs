@@ -1,13 +1,16 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using InvestmentApi.Data;
 using InvestmentApi.Models;
 using InvestmentApi.Services;
+using System.Security.Claims;
 
 namespace InvestmentApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class InvestmentsController : ControllerBase
     {
         private readonly InvestmentContext _context;
@@ -21,10 +24,26 @@ namespace InvestmentApi.Controllers
             _portfolioHistoryService = portfolioHistoryService;
         }
 
+        private int GetCurrentUserId()
+        {
+            // Szukaj claim NameIdentifier (standardowy claim dla user ID)
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim?.Value, out var userId))
+            {
+                return userId;
+            }
+            
+            // Debug: log jeśli nie ma claim
+            Console.WriteLine($"DEBUG: User claims: {string.Join(", ", User.Claims.Select(c => $"{c.Type}={c.Value}"))}");
+            return 0;
+        }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<InvestmentDto>>> GetInvestments()
         {
+            var userId = GetCurrentUserId();
             var transactions = await _context.Transactions
+                .Where(t => t.UserId == userId)
                 .Include(t => t.Asset)
                 .OrderByDescending(t => t.TransactionDate)
                 .ThenByDescending(t => t.Id)
@@ -52,9 +71,10 @@ namespace InvestmentApi.Controllers
             if (!ModelState.IsValid)
                 return ValidationProblem(ModelState);
 
+            var userId = GetCurrentUserId();
             dto.Symbol = AssetSymbolMapper.NormalizeSymbol(dto.Symbol);
             var asset = await GetOrCreateAssetAsync(dto.Symbol);
-            var transaction = MapToTransaction(dto, asset.Id);
+            var transaction = MapToTransaction(dto, asset.Id, userId);
 
             _context.Transactions.Add(transaction);
             await _context.SaveChangesAsync();
@@ -110,7 +130,9 @@ namespace InvestmentApi.Controllers
         [HttpGet("summary")]
         public async Task<ActionResult<IEnumerable<InvestmentSummaryDto>>> GetInvestmentSummary()
         {
+            var userId = GetCurrentUserId();
             var transactions = await _context.Transactions
+                .Where(t => t.UserId == userId)
                 .Include(t => t.Asset)
                 .ToListAsync();
 
@@ -181,8 +203,9 @@ namespace InvestmentApi.Controllers
             return asset;
         }
 
-        private static Transaction MapToTransaction(InvestmentDto dto, int assetId) => new()
+        private static Transaction MapToTransaction(InvestmentDto dto, int assetId, int userId) => new()
         {
+            UserId = userId,
             AssetId = assetId,
             Type = dto.Type,
             Amount = dto.Amount,

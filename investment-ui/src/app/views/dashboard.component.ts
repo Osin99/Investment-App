@@ -21,7 +21,13 @@ import { InvestmentSummaryBoxComponent } from '../components/investment-summary-
   ]
 })
 export class DashboardComponent {
+  lastUpdateTime = '';
+
   constructor(private router: Router) {}
+
+  ngOnInit(): void {
+    this.lastUpdateTime = new Date().toLocaleTimeString('pl-PL');
+  }
 
   goToForm(): void {
     this.router.navigate(['/dodaj']);

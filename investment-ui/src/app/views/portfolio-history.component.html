@@ -7,42 +7,36 @@
 </div>
 
 <div *ngIf='portfolioHistory && !isLoading'>
-  <section class='page-hero'>
-    <p class='page-kicker'>Portfolio timeline</p>
-    <h1 class='page-title'>Historia wartości portfela</h1>
-    <p class='page-subtitle'>
-      Wykres pokazuje dwie linie: zainwestowany kapitał oraz wartość portfela liczona po historycznych cenach walut.
-    </p>
-    <div class='hero-actions'>
-      <a class='btn btn-outline-primary' routerLink='/'>Wróć do dashboardu</a>
-    </div>
-  </section>
+  <div class="dashboard-header">
+    <h1>Historia portfela</h1>
+    <p>Wykres pokazuje dwie linie: zainwestowany kapitał oraz wartość portfela liczona po historycznych cenach walut.</p>
+  </div>
 
   <section class='metric-grid'>
     <article class='metric-card'>
-      <p class='metric-label'>Łączna ilość</p>
-      <p class='metric-value'>{{ portfolioHistory.totalAmount | number:'1.4-8' }}</p>
-      <p class='metric-note'>Jednostki kryptowalut</p>
+      <p class='metric-label'>Średnia cena zakupu (DCA)</p>
+      <p class='metric-value'>{{ dca | currency:'PLN':'symbol':'1.2-2' }}</p>
+      <p class='metric-note'>Średnia ważona cena</p>
     </article>
 
     <article class='metric-card'>
-      <p class='metric-label'>Zainwestowany kapitał</p>
-      <p class='metric-value'>{{ portfolioHistory.totalInvested | currency:'PLN':'symbol':'1.2-2' }}</p>
-      <p class='metric-note'>Skumulowane wpłaty</p>
+      <p class='metric-label'>Maksymalny drawdown</p>
+      <p class='metric-value text-danger'>{{ maxDrawdown | number:'1.2-2' }}%</p>
+      <p class='metric-note'>Największy spadek od szczytu</p>
     </article>
 
     <article class='metric-card'>
-      <p class='metric-label'>Wartość portfela</p>
-      <p class='metric-value'>{{ portfolioHistory.marketValue | currency:'PLN':'symbol':'1.2-2' }}</p>
-      <p class='metric-note'>Wycena historyczna</p>
+      <p class='metric-label'>Dni inwestowania</p>
+      <p class='metric-value'>{{ investmentDays }}</p>
+      <p class='metric-note'>Od pierwszego do ostatniego zakupu</p>
     </article>
 
     <article class='metric-card'>
-      <p class='metric-label'>Zysk / strata</p>
-      <p class='metric-value' [class.text-success]='isProfit' [class.text-danger]='!isProfit'>
-        {{ totalProfit | currency:'PLN':'symbol':'1.2-2' }}
+      <p class='metric-label'>ROI (Return on Investment)</p>
+      <p class='metric-value' [class.text-success]='roi >= 0' [class.text-danger]='roi < 0'>
+        {{ roi | number:'1.2-2' }}%
       </p>
-      <p class='metric-note'>{{ portfolioHistory.profitPercent | number:'1.2-2' }}%</p>
+      <p class='metric-note'>Zwrot z inwestycji</p>
     </article>
   </section>
 

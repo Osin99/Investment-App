@@ -1,22 +1,25 @@
 <div *ngIf="!isLoading">
-  <div class="metric-card">
-    <p class="metric-label">Łącznie zainwestowano</p>
-    <p class="metric-value">{{ totalInvested | currency:'PLN':'symbol':'1.2-2' }}</p>
-    <p class="metric-note">Skumulowany kapitał</p>
-  </div>
+  <div class="kpi-grid">
+    <div class="metric-card">
+      <p class="metric-label">Łącznie zainwestowano</p>
+      <p class="metric-value metric-value-number">{{ totalInvested | currency:'PLN':'symbol':'1.2-2' }}</p>
+      <p class="metric-note">Skumulowany kapitał</p>
+    </div>
 
-  <div class="metric-card mt-4">
-    <p class="metric-label">Aktualna wartość rynkowa</p>
-    <p class="metric-value">{{ totalMarketValue | currency:'PLN':'symbol':'1.2-2' }}</p>
-    <p class="metric-note">Wycena portfela</p>
-  </div>
+    <div class="metric-card">
+      <p class="metric-label">Aktualna wartość rynkowa</p>
+      <p class="metric-value metric-value-number">{{ totalMarketValue | currency:'PLN':'symbol':'1.2-2' }}</p>
+      <p class="metric-note">Wycena portfela</p>
+    </div>
 
-  <div class="metric-card mt-4">
-    <p class="metric-label">Zysk / strata</p>
-    <p class="metric-value" [ngClass]="profit >= 0 ? 'text-success' : 'text-danger'">
-      {{ profit | currency:'PLN':'symbol':'1.2-2' }}
-    </p>
-    <p class="metric-note">{{ profitPercent }}%</p>
+    <div class="metric-card">
+      <p class="metric-label">Zysk / strata</p>
+      <p class="metric-value metric-value-number" [ngClass]="profit >= 0 ? 'text-success' : 'text-danger'">
+        <span class="profit-arrow">{{ profit >= 0 ? '↑' : '↓' }}</span>
+        {{ profit | currency:'PLN':'symbol':'1.2-2' }}
+      </p>
+      <p class="metric-note">{{ profitPercent }}%</p>
+    </div>
   </div>
 </div>
 

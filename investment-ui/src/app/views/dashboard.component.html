@@ -1,39 +1,26 @@
-<section class="page-hero">
-  <p class="page-kicker">Crypto Portfolio OS</p>
-  <h1 class="page-title">Zarządzaj inwestycjami w nowoczesnym panelu</h1>
-  <p class="page-subtitle">
-    Śledź aktywa, zyski, straty i historię portfela w ciemnym interfejsie z gradientami.
-  </p>
-  <div class="hero-actions">
-    <button class="btn btn-primary" (click)="goToForm()">Dodaj inwestycję</button>
-    <a class="btn btn-outline-primary" routerLink="/historia">Zobacz historię portfela</a>
+<div class="dashboard-header">
+  <h1>Dashboard</h1>
+  <p>Przegląd Twojego portfela inwestycyjnego</p>
+</div>
+
+<section class="kpi-section">
+  <div class="kpi-container">
+    <div class="kpi-card">
+      <app-investment-summary-box></app-investment-summary-box>
+    </div>
+    <div class="kpi-card kpi-assets-card">
+      <div class="section-panel">
+        <div class="panel-title">
+          <div>
+            <h3>Twoje aktywa</h3>
+            <p class="panel-subtitle">Podział portfela %</p>
+          </div>
+        </div>
+        <app-investment-summary></app-investment-summary>
+      </div>
+    </div>
   </div>
-</section>
-
-<section class="metric-grid">
-  <article class="metric-card">
-    <p class="metric-label">Aktywa</p>
-    <p class="metric-value">Krypto</p>
-    <p class="metric-note">Portfel i pozycje w jednym miejscu</p>
-  </article>
-
-  <article class="metric-card">
-    <p class="metric-label">Wycena</p>
-    <p class="metric-value">PLN</p>
-    <p class="metric-note">Bieżąca wartość rynkowa</p>
-  </article>
-
-  <article class="metric-card">
-    <p class="metric-label">Historia</p>
-    <p class="metric-value">24/7</p>
-    <p class="metric-note">Dane dzienne i punkty zakupów</p>
-  </article>
-
-  <article class="metric-card">
-    <p class="metric-label">Tryb</p>
-    <p class="metric-value">Dark</p>
-    <p class="metric-note">Gradientowy, nowoczesny UI</p>
-  </article>
+  <p class="update-time-section">Ostatnia aktualizacja: {{ lastUpdateTime }}</p>
 </section>
 
 <section class="row g-4">
@@ -55,35 +42,11 @@
         <div>
           <h3>Zakupione aktywa</h3>
           <p class="panel-subtitle">Edytuj lub usuwaj pozycje</p>
+          
         </div>
+        <a class="nav-link-in-panel nav-link-in-panel-primary" routerLink="/dodaj" routerLinkActive="active">Dodaj inwestycję</a>
       </div>
       <app-investment-list></app-investment-list>
-    </div>
-  </div>
-</section>
-
-<section class="row g-4 mt-2">
-  <div class="col-lg-6">
-    <div class="section-panel">
-      <div class="panel-title">
-        <div>
-          <h3>Twoje aktywa</h3>
-          <p class="panel-subtitle">Podział według symbolu</p>
-        </div>
-      </div>
-      <app-investment-summary></app-investment-summary>
-    </div>
-  </div>
-
-  <div class="col-lg-6">
-    <div class="section-panel">
-      <div class="panel-title">
-        <div>
-          <h3>Podsumowanie finansowe</h3>
-          <p class="panel-subtitle">Kapitał, wartość i wynik</p>
-        </div>
-      </div>
-      <app-investment-summary-box></app-investment-summary-box>
     </div>
   </div>
 </section>

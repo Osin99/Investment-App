@@ -1,0 +1,62 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo">IA</div>
+      <h1>{{ isRegisterMode ? 'Rejestracja' : 'Logowanie' }}</h1>
+      <p>{{ isRegisterMode ? 'Utwórz nowe konto' : 'Zaloguj się do aplikacji' }}</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="twój@email.com"
+          required
+          class="form-control"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Hasło</label>
+        <input
+          type="password"
+          id="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="••••••••"
+          required
+          class="form-control"
+        />
+      </div>
+
+      <div *ngIf="errorMessage" class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+
+      <button
+        type="submit"
+        [disabled]="isLoading"
+        class="btn btn-primary btn-login"
+      >
+        {{ isLoading ? 'Ładowanie...' : (isRegisterMode ? 'Zarejestruj się' : 'Zaloguj się') }}
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <p>
+        {{ isRegisterMode ? 'Masz już konto?' : 'Nie masz konta?' }}
+        <button
+          type="button"
+          (click)="toggleMode()"
+          class="toggle-mode-btn"
+        >
+          {{ isRegisterMode ? 'Zaloguj się' : 'Zarejestruj się' }}
+        </button>
+      </p>
+    </div>
+  </div>
+</div>

@@ -215,6 +215,48 @@ export class PortfolioHistoryComponent implements OnInit {
     return this.portfolioHistory?.profit ?? 0;
   }
 
+  get dca(): number {
+    if (!this.portfolioHistory || this.portfolioHistory.totalAmount === 0) return 0;
+    return this.portfolioHistory.totalInvested / this.portfolioHistory.totalAmount;
+  }
+
+  get maxDrawdown(): number {
+    if (!this.portfolioHistory || this.portfolioHistory.history.length === 0) return 0;
+    
+    let maxValue = 0;
+    let maxDD = 0;
+    
+    for (const point of this.portfolioHistory.history) {
+      if (point.marketValue > maxValue) {
+        maxValue = point.marketValue;
+      }
+      const drawdown = ((point.marketValue - maxValue) / maxValue) * 100;
+      if (drawdown < maxDD) {
+        maxDD = drawdown;
+      }
+    }
+    
+    return maxDD;
+  }
+
+  get investmentDays(): number {
+    if (!this.transactionValuations || this.transactionValuations.length === 0) return 0;
+    
+    const sortedByDate = [...this.transactionValuations].sort(
+      (a, b) => new Date(a.buyDate).getTime() - new Date(b.buyDate).getTime()
+    );
+    
+    const firstDate = new Date(sortedByDate[0].buyDate);
+    const lastDate = new Date(sortedByDate[sortedByDate.length - 1].buyDate);
+    
+    return Math.floor((lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  get roi(): number {
+    if (!this.portfolioHistory || this.portfolioHistory.totalInvested === 0) return 0;
+    return ((this.portfolioHistory.profit / this.portfolioHistory.totalInvested) * 100);
+  }
+
   get isProfit(): boolean {
     return this.totalProfit >= 0;
   }
