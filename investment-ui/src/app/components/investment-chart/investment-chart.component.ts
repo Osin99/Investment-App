@@ -1,9 +1,10 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { ChartConfiguration, ChartOptions } from 'chart.js';
 import { InvestmentService } from '../../services/investment.service';
 import { InvestmentValuationService } from '../../services/investment-valuation.service';
+import { AssetCategory } from '../../models/asset-category';
 
 @Component({
   selector: 'app-investment-chart',
@@ -12,7 +13,9 @@ import { InvestmentValuationService } from '../../services/investment-valuation.
   templateUrl: './investment-chart.component.html'
 })
 
-export class InvestmentChartComponent implements OnInit {
+export class InvestmentChartComponent implements OnInit, OnChanges {
+  @Input() category: AssetCategory | null = null;
+  
   chartType: 'bar' = 'bar';
   isLoading = true;
   totalProfit = 0;
@@ -54,7 +57,15 @@ export class InvestmentChartComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.investmentService.getInvestmentSummary().subscribe({
+    this.loadChart();
+  }
+
+  ngOnChanges(): void {
+    this.loadChart();
+  }
+
+  private loadChart(): void {
+    this.investmentService.getInvestmentSummary(this.category ?? undefined).subscribe({
       next: summary => {
         this.investmentValuationService.getValuations(summary).subscribe({
           next: valuations => {

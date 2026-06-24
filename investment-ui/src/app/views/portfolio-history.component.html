@@ -47,6 +47,41 @@
         <p class='panel-subtitle'>Kapitał wpłacony i aktualna wartość w każdym dniu</p>
       </div>
     </div>
+    
+    <!-- Filtry kategorii -->
+    <div class='category-filters mb-3'>
+      <button 
+        class='filter-pill'
+        [class.active]='selectedCategory === null'
+        (click)='selectCategory(null)'>
+        Wszystkie
+      </button>
+      <button 
+        class='filter-pill'
+        [class.active]='selectedCategory === 0'
+        (click)='selectCategory(0)'>
+        Krypto
+      </button>
+      <button 
+        class='filter-pill'
+        [class.active]='selectedCategory === 1'
+        (click)='selectCategory(1)'>
+        ETF
+      </button>
+      <button 
+        class='filter-pill'
+        [class.active]='selectedCategory === 2'
+        (click)='selectCategory(2)'>
+        Akcje
+      </button>
+      <button 
+        class='filter-pill'
+        [class.active]='selectedCategory === 3'
+        (click)='selectCategory(3)'>
+        Inne
+      </button>
+    </div>
+    
     <canvas
       baseChart
       [type]='chartType'
@@ -82,7 +117,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor='let valuation of transactionValuations'>
+          <tr *ngFor='let valuation of paginatedData'>
             <td>{{ valuation.buyDate }} <small class='text-muted'>#{{ valuation.id }}</small></td>
             <td>
               <span class="badge" [class.bg-success]="valuation.type === 0" [class.bg-warning]="valuation.type === 1">
@@ -102,6 +137,27 @@
           </tr>
         </tbody>
       </table>
+      
+      <!-- Paginacja -->
+      <div class='pagination-container mt-3'>
+        <div class='pagination-info'>
+          Strona {{ currentPage }} z {{ totalPages }} ({{ filteredTransactionValuations.length }} pozycji)
+        </div>
+        <div class='pagination-buttons'>
+          <button 
+            class='btn btn-sm btn-outline-secondary'
+            (click)='previousPage()'
+            [disabled]='currentPage === 1'>
+            ← Poprzednia
+          </button>
+          <button 
+            class='btn btn-sm btn-outline-secondary'
+            (click)='nextPage()'
+            [disabled]='currentPage === totalPages'>
+            Następna →
+          </button>
+        </div>
+      </div>
     </div>
   </section>
 </div>

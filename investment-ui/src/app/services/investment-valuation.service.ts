@@ -15,24 +15,24 @@ export interface InvestmentValuation extends InvestmentSummary {
 export class InvestmentValuationService {
   constructor(private cryptoService: CryptoService) {}
 
-  getValuations(summary: InvestmentSummary[]): Observable<InvestmentValuation[]> {
-    const symbols = summary.map(s => s.symbol);
+   getValuations(summary: InvestmentSummary[]): Observable<InvestmentValuation[]> {
+     const symbols = summary.map(s => s.symbol);
 
-    return this.cryptoService.getPrices(symbols).pipe(
-      map(prices => summary.map(s => this.mapValuation(s, prices[s.symbol.toLowerCase()] || 0)))
-    );
-  }
+     return this.cryptoService.getPrices(symbols).pipe(
+       map(prices => summary.map(s => this.mapValuation(s, prices[s.symbol.toUpperCase()] || 0)))
+     );
+   }
 
-  private mapValuation(summary: InvestmentSummary, currentPrice: number): InvestmentValuation {
-    const marketValue = summary.totalAmount * currentPrice;
-    const profit = marketValue - summary.totalInvested;
-    const invested = summary.totalInvested || 1;
+   private mapValuation(summary: InvestmentSummary, currentPrice: number): InvestmentValuation {
+     const marketValue = summary.totalAmount * currentPrice;
+     const profit = marketValue - summary.totalInvested;
+     const invested = summary.totalInvested || 1;
 
-    return {
-      ...summary,
-      marketValue,
-      profit,
-      profitPercent: (profit / invested) * 100
-    };
-  }
+     return {
+       ...summary,
+       marketValue,
+       profit,
+       profitPercent: (profit / invested) * 100
+     };
+   }
 }

@@ -2,7 +2,7 @@
   <p class="page-kicker">{{ form.id ? 'Edycja pozycji' : 'Nowa pozycja' }}</p>
   <h1 class="page-title">{{ form.id ? 'Edytuj inwestycję' : 'Dodaj inwestycję' }}</h1>
   <p class="page-subtitle">
-    Dodaj zakup kryptowaluty, aby aktualizować portfel i wykresy.
+    {{ getCategorySubtitle() }}
   </p>
   <div class="hero-actions">
     <a class="btn btn-outline-primary" routerLink="/">Wróć do dashboardu</a>
@@ -12,6 +12,22 @@
 <div class="glass-card">
   <form #f="ngForm" (ngSubmit)="submitForm()" class="needs-validation" novalidate>
     <div class="row g-4">
+      <div class="col-md-6">
+        <label for="category" class="form-label">Kategoria aktywa</label>
+        <select
+          id="category"
+          name="category"
+          class="form-select"
+          [(ngModel)]="form.category"
+          (change)="onCategoryChange()"
+          required>
+          <option [ngValue]="0">Krypto</option>
+          <option [ngValue]="1">ETF</option>
+          <option [ngValue]="2">Akcje</option>
+          <option [ngValue]="3">Złoto</option>
+        </select>
+      </div>
+
       <div class="col-md-6">
         <label for="type" class="form-label">Typ transakcji</label>
         <select
@@ -26,17 +42,12 @@
         </select>
       </div>
 
-      <div class="col-md-6">
-        <label for="symbol" class="form-label">Symbol</label>
-        <input
-          type="text"
-          id="symbol"
-          name="symbol"
-          class="form-control"
-          [(ngModel)]="form.symbol"
-          placeholder="np. BTC"
-          required />
-      </div>
+       <div class="col-md-6">
+         <label for="symbol" class="form-label">{{ getSymbolLabel() }}</label>
+         <app-security-search 
+           [categoryFilter]="form.category"
+           (securitySelected)="onSecuritySelected($event)"></app-security-search>
+       </div>
 
       <div class="col-md-6">
         <label for="amount" class="form-label">Ilość</label>
@@ -52,19 +63,23 @@
           step="any" />
       </div>
 
-      <div class="col-md-6">
-        <label for="buyPrice" class="form-label">{{ form.type === 1 ? 'Cena sprzedaży' : 'Cena zakupu' }}</label>
-        <input
-          type="number"
-          id="buyPrice"
-          name="buyPrice"
-          class="form-control"
-          [(ngModel)]="form.buyPrice"
-          placeholder="Cena w PLN"
-          required
-          min="0"
-          step="any" />
-      </div>
+       <div class="col-md-6">
+          <label for="buyPrice" class="form-label">
+            {{ form.type === 1 ? 'Cena sprzedaży' : 'Cena zakupu' }}
+            <span *ngIf="isLoadingPrice" class="badge bg-info ms-2">Pobieranie...</span>
+            <span *ngIf="currentPrice && !isLoadingPrice" class="badge bg-success ms-2">{{ (currentPrice || 0) | number:'1.2-8' }} PLN</span>
+          </label>
+         <input
+           type="number"
+           id="buyPrice"
+           name="buyPrice"
+           class="form-control"
+           [(ngModel)]="form.buyPrice"
+           placeholder="Cena w PLN"
+           required
+           min="0"
+           step="any" />
+       </div>
 
       <div class="col-md-6">
         <label for="buyDate" class="form-label">Data zakupu</label>

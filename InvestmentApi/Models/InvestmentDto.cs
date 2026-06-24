@@ -25,6 +25,8 @@ namespace InvestmentApi.Models
         [Required(ErrorMessage = "Data transakcji jest wymagana")]
         public DateTime BuyDate { get; set; }
 
+        public int Category { get; set; } = 0;
+
         public static InvestmentDto FromTransaction(Transaction transaction) => new()
         {
             Id = transaction.Id,
@@ -32,7 +34,8 @@ namespace InvestmentApi.Models
             Type = transaction.Type,
             Amount = transaction.Amount,
             BuyPrice = transaction.Price,
-            BuyDate = transaction.TransactionDate
+            BuyDate = transaction.TransactionDate,
+            Category = (int)transaction.Category
         };
     }
 }

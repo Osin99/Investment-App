@@ -18,6 +18,7 @@ interface TransactionValuation {
   marketValue: number;
   profit: number;
   profitPercent: number;
+  category: number;
 }
  
 @Component({
@@ -31,10 +32,16 @@ interface TransactionValuation {
 export class PortfolioHistoryComponent implements OnInit {
   portfolioHistory: PortfolioHistory | null = null;
   transactionValuations: TransactionValuation[] = [];
+  filteredTransactionValuations: TransactionValuation[] = [];
   isLoading = true;
   transactionValuationsLoading = false;
   errorMessage = '';
   transactionErrorMessage = '';
+  
+  selectedCategory: number | null = null;
+  currentPage = 1;
+  itemsPerPage = 10;
+  totalPages = 1;
 
   chartType: 'line' = 'line';
 
@@ -127,37 +134,99 @@ export class PortfolioHistoryComponent implements OnInit {
         this.isLoading = false;
       }
     });
+    
+    // Inicjalizuj filtry domyślnie
+    this.updateFilteredData();
   }
 
-  private loadTransactionValuations(): void {
-    this.transactionValuationsLoading = true;
-    this.transactionErrorMessage = '';
+   private loadTransactionValuations(): void {
+     this.transactionValuationsLoading = true;
+     this.transactionErrorMessage = '';
 
-    this.investmentService.getInvestments().subscribe({
-      next: investments => {
-        const symbols = investments.map(investment => investment.symbol);
+     this.investmentService.getInvestments().subscribe({
+       next: investments => {
+         // Oddziel symbole na krypto i akcje/ETF
+         const cryptoSymbols = investments
+           .filter(inv => this.isCrypto(inv.symbol))
+           .map(inv => inv.symbol);
+         
+         const stockSymbols = investments
+           .filter(inv => !this.isCrypto(inv.symbol))
+           .map(inv => inv.symbol);
 
-        this.cryptoService.getPrices(symbols).subscribe({
-          next: prices => {
-            this.transactionValuations = investments
-              .map(investment => this.mapTransactionValuation(investment, prices[investment.symbol.toLowerCase()] ?? 0))
-              .sort((a, b) => new Date(a.buyDate).getTime() - new Date(b.buyDate).getTime() || a.id - b.id);
-            this.transactionValuationsLoading = false;
-          },
-          error: err => {
-            this.transactionErrorMessage = 'Nie udało się pobrać aktualnych cen dla tabeli wpłat.';
-            console.error('Nie udało się pobrać aktualnych cen dla tabeli wpłat', err);
-            this.transactionValuationsLoading = false;
-          }
-        });
-      },
-      error: err => {
-        this.transactionErrorMessage = 'Nie udało się pobrać wpłat dla tabeli.';
-        console.error('Nie udało się pobrać wpłat dla tabeli', err);
-        this.transactionValuationsLoading = false;
-      }
-    });
-  }
+         // Pobierz ceny dla obu typów
+         let cryptoPrices: { [key: string]: number } = {};
+         let stockPrices: { [key: string]: number } = {};
+         let completedRequests = 0;
+
+         const onComplete = () => {
+           completedRequests++;
+           if (completedRequests === 2) {
+             // Połącz ceny z obu źródeł
+             const allPrices = { ...cryptoPrices, ...stockPrices };
+             
+             this.transactionValuations = investments
+               .map(investment => this.mapTransactionValuation(investment, allPrices[investment.symbol.toUpperCase()] ?? 0))
+               .sort((a, b) => new Date(a.buyDate).getTime() - new Date(b.buyDate).getTime() || a.id - b.id);
+             
+             this.transactionValuationsLoading = false;
+             this.updateFilteredData();
+             this.updateChart(); // Odśwież wykres z aktualnymi cenami
+           }
+         };
+
+         // Pobierz ceny kryptowalut
+         if (cryptoSymbols.length > 0) {
+           this.cryptoService.getCryptoPrices(cryptoSymbols).subscribe({
+             next: prices => {
+               cryptoPrices = prices;
+               onComplete();
+             },
+             error: err => {
+               console.warn('[Portfolio] Błąd pobierania cen krypto:', err);
+               onComplete();
+             }
+           });
+         } else {
+           completedRequests++;
+         }
+
+         // Pobierz ceny akcji/ETF
+         if (stockSymbols.length > 0) {
+           this.cryptoService.getStockPrices(stockSymbols).subscribe({
+             next: prices => {
+               stockPrices = prices;
+               onComplete();
+             },
+             error: err => {
+               console.warn('[Portfolio] Błąd pobierania cen akcji/ETF:', err);
+               onComplete();
+             }
+           });
+         } else {
+           completedRequests++;
+         }
+
+         // Jeśli nie ma żadnych symboli
+         if (cryptoSymbols.length === 0 && stockSymbols.length === 0) {
+           this.transactionValuationsLoading = false;
+         }
+       },
+       error: err => {
+         this.transactionErrorMessage = 'Nie udało się pobrać wpłat dla tabeli.';
+         console.error('Nie udało się pobrać wpłat dla tabeli', err);
+         this.transactionValuationsLoading = false;
+       }
+     });
+   }
+
+   /**
+    * Sprawdza czy symbol to kryptowaluta
+    */
+   private isCrypto(symbol: string): boolean {
+     const cryptoSymbols = ['BTC', 'ETH', 'SOL', 'DOGE', 'SHIB', 'XRP', 'ADA', 'LINK', 'USDT'];
+     return cryptoSymbols.includes(symbol.toUpperCase());
+   }
 
   private mapTransactionValuation(investment: Investment, currentPrice: number): TransactionValuation {
     const invested = investment.amount * investment.buyPrice;
@@ -175,7 +244,8 @@ export class PortfolioHistoryComponent implements OnInit {
       invested,
       marketValue,
       profit,
-      profitPercent: invested > 0 ? (profit / invested) * 100 : 0
+      profitPercent: invested > 0 ? (profit / invested) * 100 : 0,
+      category: 0 // Domyślnie Crypto - będzie mapowane z backendu
     };
   }
 
@@ -216,12 +286,21 @@ export class PortfolioHistoryComponent implements OnInit {
   }
 
   get dca(): number {
-    if (!this.portfolioHistory || this.portfolioHistory.totalAmount === 0) return 0;
-    return this.portfolioHistory.totalInvested / this.portfolioHistory.totalAmount;
+    const filtered = this.getFilteredTransactions();
+    if (filtered.length === 0) return 0;
+    
+    const totalAmount = filtered.reduce((sum, t) => sum + t.amount, 0);
+    const totalInvested = filtered.reduce((sum, t) => sum + t.invested, 0);
+    
+    if (totalAmount === 0) return 0;
+    return totalInvested / totalAmount;
   }
 
   get maxDrawdown(): number {
     if (!this.portfolioHistory || this.portfolioHistory.history.length === 0) return 0;
+    
+    const filtered = this.getFilteredTransactions();
+    if (filtered.length === 0) return 0;
     
     let maxValue = 0;
     let maxDD = 0;
@@ -240,9 +319,10 @@ export class PortfolioHistoryComponent implements OnInit {
   }
 
   get investmentDays(): number {
-    if (!this.transactionValuations || this.transactionValuations.length === 0) return 0;
+    const filtered = this.getFilteredTransactions();
+    if (filtered.length === 0) return 0;
     
-    const sortedByDate = [...this.transactionValuations].sort(
+    const sortedByDate = [...filtered].sort(
       (a, b) => new Date(a.buyDate).getTime() - new Date(b.buyDate).getTime()
     );
     
@@ -253,12 +333,126 @@ export class PortfolioHistoryComponent implements OnInit {
   }
 
   get roi(): number {
-    if (!this.portfolioHistory || this.portfolioHistory.totalInvested === 0) return 0;
-    return ((this.portfolioHistory.profit / this.portfolioHistory.totalInvested) * 100);
+    const filtered = this.getFilteredTransactions();
+    if (filtered.length === 0) return 0;
+    
+    const totalInvested = filtered.reduce((sum, t) => sum + t.invested, 0);
+    const totalMarketValue = filtered.reduce((sum, t) => sum + t.marketValue, 0);
+    const profit = totalMarketValue - totalInvested;
+    
+    if (totalInvested === 0) return 0;
+    return (profit / totalInvested) * 100;
+  }
+
+  private getFilteredTransactions(): TransactionValuation[] {
+    if (this.selectedCategory === null) {
+      return this.transactionValuations;
+    }
+    return this.transactionValuations.filter(t => t.category === this.selectedCategory);
   }
 
   get isProfit(): boolean {
     return this.totalProfit >= 0;
+  }
+
+   selectCategory(category: number | null): void {
+     this.selectedCategory = category;
+     this.currentPage = 1;
+     this.updateFilteredData();
+     this.updateChart();
+   }
+
+   private updateChart(): void {
+     if (!this.portfolioHistory) return;
+     
+     // Jeśli nie ma wybranej kategorii, pokaż cały portfel
+     if (this.selectedCategory === null) {
+       this.buildChart(this.portfolioHistory);
+       return;
+     }
+     
+     const filtered = this.getFilteredTransactions();
+     
+     if (filtered.length === 0) {
+       // Jeśli brak danych dla kategorii, pokaż pusty wykres
+       this.chartData = {
+         labels: [],
+         datasets: [
+           {
+             label: 'Wartość portfela wg historycznych cen',
+             data: [],
+             borderColor: 'rgba(75, 192, 192, 1)',
+             backgroundColor: 'rgba(75, 192, 192, 0.2)',
+             tension: 0.3
+           },
+           {
+             label: 'Zainwestowany kapitał',
+             data: [],
+             borderColor: 'rgba(54, 162, 235, 1)',
+             backgroundColor: 'rgba(54, 162, 235, 0.2)',
+             tension: 0.3
+           }
+         ]
+       };
+       return;
+     }
+     
+     // Filtruj historię portfela na podstawie wybranych transakcji
+     const filteredDates = new Set(filtered.map(t => t.buyDate));
+     const filteredHistory = this.portfolioHistory.history.filter(point => {
+       // Pokaż punkty od pierwszej transakcji w kategorii
+       const firstDate = new Date(filtered[0].buyDate);
+       const pointDate = new Date(point.date);
+       return pointDate >= firstDate;
+     });
+     
+     this.chartData = {
+       labels: filteredHistory.map(point => point.date),
+       datasets: [
+         {
+           label: 'Wartość portfela wg historycznych cen',
+           data: filteredHistory.map(point => point.marketValue),
+           borderColor: 'rgba(75, 192, 192, 1)',
+           backgroundColor: 'rgba(75, 192, 192, 0.2)',
+           tension: 0.3
+         },
+         {
+           label: 'Zainwestowany kapitał',
+           data: filteredHistory.map(point => point.totalInvested),
+           borderColor: 'rgba(54, 162, 235, 1)',
+           backgroundColor: 'rgba(54, 162, 235, 0.2)',
+           tension: 0.3
+         }
+       ]
+     };
+   }
+
+  private updateFilteredData(): void {
+    if (this.selectedCategory === null) {
+      this.filteredTransactionValuations = [...this.transactionValuations];
+    } else {
+      this.filteredTransactionValuations = this.transactionValuations.filter(
+        t => t.category === this.selectedCategory
+      );
+    }
+    this.totalPages = Math.ceil(this.filteredTransactionValuations.length / this.itemsPerPage);
+  }
+
+  get paginatedData(): TransactionValuation[] {
+    const start = (this.currentPage - 1) * this.itemsPerPage;
+    return this.filteredTransactionValuations.slice(start, start + this.itemsPerPage);
+  }
+
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+    }
   }
 }
 

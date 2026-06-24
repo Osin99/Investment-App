@@ -10,17 +10,25 @@ namespace InvestmentApi.Services
         private readonly InvestmentContext _context;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<PriceService> _logger;
+        private readonly FinnhubService _finnhubService;
+        private readonly SecurityUpdateLogger _securityLogger;
 
-        private static readonly TimeSpan CurrentPriceCacheTtl = TimeSpan.FromMinutes(2);
+        // Cache TTL: 5 minut dla krypto, 24h dla akcji/ETF
+        private static readonly TimeSpan CryptoCacheTtl = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan StockCacheTtl = TimeSpan.FromHours(24);
 
         public PriceService(
             InvestmentContext context,
             IHttpClientFactory httpClientFactory,
-            ILogger<PriceService> logger)
+            ILogger<PriceService> logger,
+            FinnhubService finnhubService,
+            SecurityUpdateLogger securityLogger)
         {
             _context = context;
             _httpClientFactory = httpClientFactory;
             _logger = logger;
+            _finnhubService = finnhubService;
+            _securityLogger = securityLogger;
         }
 
         public async Task<Dictionary<string, decimal>> GetCurrentPricesAsync(
@@ -37,48 +45,84 @@ namespace InvestmentApi.Services
 
             var today = DateOnly.FromDateTime(DateTime.Today);
             var result = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
-            var symbolsToFetch = new List<string>();
+            var cryptoToFetch = new List<string>();
+            var stocksToFetch = new List<string>();
 
             foreach (var symbol in normalizedSymbols)
             {
+                var security = await _context.Securities
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(s => s.Symbol == symbol, cancellationToken);
+
+                var isCrypto = security?.Type == "Crypto";
+                var cacheTtl = isCrypto ? CryptoCacheTtl : StockCacheTtl;
+
                 var asset = await _context.Assets
                     .AsNoTracking()
                     .FirstOrDefaultAsync(a => a.Symbol == symbol, cancellationToken);
 
-                if (asset == null)
+                if (asset != null)
                 {
-                    symbolsToFetch.Add(symbol);
-                    continue;
+                    var cached = await _context.PriceSnapshots
+                        .AsNoTracking()
+                        .Where(p => p.AssetId == asset.Id && p.SnapshotDate == today)
+                        .OrderByDescending(p => p.FetchedAt)
+                        .FirstOrDefaultAsync(cancellationToken);
+
+                    if (cached != null && DateTime.UtcNow - cached.FetchedAt < cacheTtl)
+                    {
+                        result[symbol] = cached.PricePln;
+                        continue;
+                    }
                 }
 
-                var cached = await _context.PriceSnapshots
-                    .AsNoTracking()
-                    .Where(p => p.AssetId == asset.Id && p.SnapshotDate == today)
-                    .OrderByDescending(p => p.FetchedAt)
-                    .FirstOrDefaultAsync(cancellationToken);
-
-                if (cached != null && DateTime.UtcNow - cached.FetchedAt < CurrentPriceCacheTtl)
-                {
-                    result[symbol] = cached.PricePln;
-                }
+                if (isCrypto)
+                    cryptoToFetch.Add(symbol);
                 else
+                    stocksToFetch.Add(symbol);
+            }
+
+            // Pobierz ceny kryptowalut z CoinGecko
+            if (cryptoToFetch.Count > 0)
+            {
+                var cryptoPrices = await FetchCryptoPricesAsync(cryptoToFetch, cancellationToken);
+                foreach (var (symbol, price) in cryptoPrices)
                 {
-                    symbolsToFetch.Add(symbol);
+                    result[symbol] = price;
+                    await UpsertTodaySnapshotAsync(symbol, price, cancellationToken);
                 }
             }
 
-            if (symbolsToFetch.Count == 0)
-                return result;
-
-            var fetched = await FetchCurrentPricesFromApiAsync(symbolsToFetch, cancellationToken);
-
-            foreach (var (symbol, price) in fetched)
+            // Pobierz ceny akcji/ETF z Finnhub (tylko te z portfela)
+            if (stocksToFetch.Count > 0)
             {
-                result[symbol] = price;
-                await UpsertTodaySnapshotAsync(symbol, price, cancellationToken);
+                var stockPrices = await FetchStockPricesWithRetryAsync(stocksToFetch, cancellationToken);
+                foreach (var (symbol, price) in stockPrices)
+                {
+                    result[symbol] = price;
+                    await UpsertTodaySnapshotAsync(symbol, price, cancellationToken);
+                }
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Pobiera ceny akcji/ETF z Finnhub dla instrumentów w portfelu użytkownika
+        /// </summary>
+        public async Task<Dictionary<string, decimal>> GetCurrentPricesForPortfolioAsync(
+            int userId,
+            CancellationToken cancellationToken = default)
+        {
+            // Pobierz tylko symbole które użytkownik ma w portfelu
+            var portfolioSymbols = await _context.Transactions
+                .AsNoTracking()
+                .Where(t => t.Asset.Transactions.Any(tx => tx.AssetId == t.AssetId))
+                .Select(t => t.Asset.Symbol)
+                .Distinct()
+                .ToListAsync(cancellationToken);
+
+            return await GetCurrentPricesAsync(portfolioSymbols, cancellationToken);
         }
 
         public async Task<Dictionary<string, Dictionary<string, decimal>>> GetHistoricalPricesAsync(
@@ -101,8 +145,10 @@ namespace InvestmentApi.Services
 
             foreach (var symbol in normalizedSymbols)
             {
-                var coinGeckoId = AssetSymbolMapper.ToCoinGeckoId(symbol);
                 var asset = await EnsureAssetAsync(symbol, cancellationToken);
+                var security = await _context.Securities
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(s => s.Symbol == symbol, cancellationToken);
 
                 var cachedPrices = await _context.PriceSnapshots
                     .AsNoTracking()
@@ -117,11 +163,26 @@ namespace InvestmentApi.Services
 
                 foreach (var (rangeStart, rangeEnd) in missingRanges)
                 {
-                    var fetched = await FetchHistoricalRangeFromApiAsync(
-                        coinGeckoId,
-                        rangeStart.ToDateTime(TimeOnly.MinValue),
-                        rangeEnd.ToDateTime(TimeOnly.MinValue),
-                        cancellationToken);
+                    Dictionary<string, decimal> fetched;
+
+                    if (security?.Type == "Crypto")
+                    {
+                        var coinGeckoId = AssetSymbolMapper.ToCoinGeckoId(symbol);
+                        fetched = await FetchHistoricalRangeFromApiAsync(
+                            coinGeckoId,
+                            rangeStart.ToDateTime(TimeOnly.MinValue),
+                            rangeEnd.ToDateTime(TimeOnly.MinValue),
+                            cancellationToken);
+                    }
+                    else
+                    {
+                        // Dla akcji/ETF pobierz z Finnhub z retry logic
+                        fetched = await FetchHistoricalStockPricesWithRetryAsync(
+                            symbol,
+                            rangeStart.ToDateTime(TimeOnly.MinValue),
+                            rangeEnd.ToDateTime(TimeOnly.MinValue),
+                            cancellationToken);
+                    }
 
                     foreach (var (date, price) in fetched)
                     {
@@ -132,18 +193,17 @@ namespace InvestmentApi.Services
                     await UpsertHistoricalSnapshotsAsync(asset.Id, fetched, cancellationToken);
                 }
 
-                result[coinGeckoId] = pricesByDate;
+                result[symbol] = pricesByDate;
             }
 
             return result;
         }
 
-        private async Task<Dictionary<string, decimal>> FetchCurrentPricesFromApiAsync(
-            IEnumerable<string> symbols,
+        private async Task<Dictionary<string, decimal>> FetchCryptoPricesAsync(
+            List<string> symbols,
             CancellationToken cancellationToken)
         {
-            var symbolList = symbols.ToArray();
-            var ids = symbolList
+            var ids = symbols
                 .Select(AssetSymbolMapper.ToCoinGeckoId)
                 .Distinct()
                 .ToArray();
@@ -156,7 +216,7 @@ namespace InvestmentApi.Services
                 var response = await client.GetFromJsonAsync<Dictionary<string, Dictionary<string, decimal>>>(url, cancellationToken);
                 var result = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
 
-                foreach (var symbol in symbolList)
+                foreach (var symbol in symbols)
                 {
                     var id = AssetSymbolMapper.ToCoinGeckoId(symbol);
                     result[symbol] = response != null && response.TryGetValue(id, out var price) && price.TryGetValue("pln", out var pln)
@@ -169,8 +229,93 @@ namespace InvestmentApi.Services
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Nie udało się pobrać aktualnych cen z CoinGecko");
-                return symbolList.ToDictionary(s => s, _ => 0m, StringComparer.OrdinalIgnoreCase);
+                return symbols.ToDictionary(s => s, _ => 0m, StringComparer.OrdinalIgnoreCase);
             }
+        }
+
+        /// <summary>
+        /// Pobiera ceny akcji/ETF z Finnhub z retry logic (429 → czekaj 60s, max 3 próby)
+        /// </summary>
+        private async Task<Dictionary<string, decimal>> FetchStockPricesWithRetryAsync(
+            List<string> symbols,
+            CancellationToken cancellationToken)
+        {
+            var result = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var symbol in symbols)
+            {
+                decimal price = 0m;
+                int maxRetries = 3;
+
+                for (int attempt = 1; attempt <= maxRetries; attempt++)
+                {
+                    try
+                    {
+                        price = await _finnhubService.GetCurrentPriceAsync(symbol, cancellationToken);
+
+                        if (price > 0)
+                        {
+                            _securityLogger.Log($"[PRICE] {symbol}: {price:F2} PLN (próba {attempt})");
+                            break;
+                        }
+                    }
+                    catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                    {
+                        _securityLogger.LogWarning($"[PRICE] {symbol}: 429 Too Many Requests - czekam 60s (próba {attempt}/{maxRetries})");
+                        if (attempt < maxRetries)
+                            await Task.Delay(TimeSpan.FromSeconds(60), cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        _securityLogger.LogWarning($"[PRICE] {symbol}: Błąd - {ex.Message} (próba {attempt}/{maxRetries})");
+                        if (attempt < maxRetries)
+                            await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+                    }
+                }
+
+                // Jeśli nie udało się pobrać z Finnhub, użyj ostatniej zapisanej ceny
+                if (price <= 0)
+                {
+                    var asset = await _context.Assets.AsNoTracking().FirstOrDefaultAsync(a => a.Symbol == symbol, cancellationToken);
+                    if (asset != null)
+                    {
+                        var lastPrice = await _context.PriceSnapshots
+                            .AsNoTracking()
+                            .Where(p => p.AssetId == asset.Id && p.PricePln > 0)
+                            .OrderByDescending(p => p.SnapshotDate)
+                            .ThenByDescending(p => p.FetchedAt)
+                            .FirstOrDefaultAsync(cancellationToken);
+
+                        if (lastPrice != null)
+                        {
+                            price = lastPrice.PricePln;
+                            _securityLogger.Log($"[PRICE] {symbol}: Używam ostatniej zapisanej ceny {price:F2} PLN z {lastPrice.SnapshotDate}");
+                        }
+                        else
+                        {
+                            // Jeśli brak ostatniej ceny, użyj ceny z ostatniej transakcji
+                            var lastTransaction = await _context.Transactions
+                                .AsNoTracking()
+                                .Where(t => t.AssetId == asset.Id)
+                                .OrderByDescending(t => t.TransactionDate)
+                                .FirstOrDefaultAsync(cancellationToken);
+
+                            if (lastTransaction != null && lastTransaction.Price > 0)
+                            {
+                                price = lastTransaction.Price;
+                                _securityLogger.Log($"[PRICE] {symbol}: Używam ceny z ostatniej transakcji {price:F2} PLN");
+                            }
+                        }
+                    }
+                }
+
+                result[symbol] = price;
+
+                // Opóźnienie 1 sekundy między zapytaniami (limit Finnhub)
+                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
+            }
+
+            return result;
         }
 
         private async Task<Dictionary<string, decimal>> FetchHistoricalRangeFromApiAsync(
@@ -223,6 +368,48 @@ namespace InvestmentApi.Services
             }
 
             return pricesByDate;
+        }
+
+        /// <summary>
+        /// Pobiera historyczne ceny akcji/ETF z Finnhub z retry logic
+        /// </summary>
+        private async Task<Dictionary<string, decimal>> FetchHistoricalStockPricesWithRetryAsync(
+            string symbol,
+            DateTime rangeStart,
+            DateTime rangeEnd,
+            CancellationToken cancellationToken)
+        {
+            int maxRetries = 3;
+
+            for (int attempt = 1; attempt <= maxRetries; attempt++)
+            {
+                try
+                {
+                    var prices = await _finnhubService.GetHistoricalPricesAsync(symbol, rangeStart, rangeEnd, cancellationToken);
+
+                    if (prices.Count > 0)
+                    {
+                        _securityLogger.Log($"[HISTORY] {symbol}: Pobrano {prices.Count} cen historycznych (próba {attempt})");
+                        return prices;
+                    }
+
+                    _securityLogger.LogWarning($"[HISTORY] {symbol}: Brak danych historycznych (próba {attempt}/{maxRetries})");
+                }
+                catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                {
+                    _securityLogger.LogWarning($"[HISTORY] {symbol}: 429 Too Many Requests - czekam 60s (próba {attempt}/{maxRetries})");
+                    if (attempt < maxRetries)
+                        await Task.Delay(TimeSpan.FromSeconds(60), cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _securityLogger.LogWarning($"[HISTORY] {symbol}: Błąd - {ex.Message} (próba {attempt}/{maxRetries})");
+                    if (attempt < maxRetries)
+                        await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+                }
+            }
+
+            return new Dictionary<string, decimal>();
         }
 
         private async Task UpsertTodaySnapshotAsync(string symbol, decimal price, CancellationToken cancellationToken)

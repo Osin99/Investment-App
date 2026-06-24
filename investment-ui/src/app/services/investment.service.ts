@@ -14,6 +14,8 @@ export interface Investment {
   amount: number;
   buyPrice: number;
   buyDate: string;
+  category?: number;
+  unit?: string;
 }
 
 export interface InvestmentSummary {
@@ -65,7 +67,10 @@ export class InvestmentService {
 
   constructor(private http: HttpClient) {}
 
-  getInvestments(): Observable<Investment[]> {
+  getInvestments(category?: number): Observable<Investment[]> {
+    if (category !== undefined) {
+      return this.http.get<Investment[]>(`${this.apiUrl}?category=${category}`);
+    }
     return this.http.get<Investment[]>(this.apiUrl);
   }
 
@@ -85,7 +90,10 @@ export class InvestmentService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  getInvestmentSummary(): Observable<InvestmentSummary[]> {
+  getInvestmentSummary(category?: number): Observable<InvestmentSummary[]> {
+    if (category !== undefined) {
+      return this.http.get<InvestmentSummary[]>(`${this.apiUrl}/summary?category=${category}`);
+    }
     return this.http.get<InvestmentSummary[]>(`${this.apiUrl}/summary`);
   }
 

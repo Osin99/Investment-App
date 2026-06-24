@@ -1,0 +1,135 @@
+<div class="admin-container">
+  <div class="admin-header">
+    <h1>Panel Administratora</h1>
+    <p class="subtitle">Zarządzanie papierami wartościowymi i cenami</p>
+  </div>
+
+  <div class="admin-content">
+
+    <!-- Karta: Aktualizacja Cen -->
+    <div class="admin-card highlight-card">
+      <div class="card-header">
+        <h2>💰 Aktualizacja Cen</h2>
+        <p class="card-description">Ręczne pobieranie aktualnych cen akcji i ETF z Finnhub</p>
+      </div>
+
+      <div class="card-body">
+        <!-- Status ostatniej aktualizacji -->
+        <div class="status-box" *ngIf="priceStatus.lastUpdatedAt">
+          <div class="status-row">
+            <span class="status-label">Ostatnia aktualizacja:</span>
+            <span class="status-value">{{ priceStatus.lastUpdatedAt }}</span>
+          </div>
+        </div>
+        <div class="status-box empty" *ngIf="!priceStatus.lastUpdatedAt">
+          <span class="status-label">Brak danych o ostatniej aktualizacji</span>
+        </div>
+
+        <!-- Cooldown info -->
+        <div class="cooldown-box" *ngIf="priceStatus.isOnCooldown">
+          <span class="cooldown-icon">⏳</span>
+          <div class="cooldown-text">
+            <strong>Cooldown aktywny</strong>
+            <span>Następna aktualizacja możliwa o {{ priceStatus.nextAvailableAt }}</span>
+            <span class="countdown">Pozostało: {{ remainingDisplay }}</span>
+          </div>
+        </div>
+
+        <button
+          class="update-button price-button"
+          (click)="updatePrices()"
+          [disabled]="isLoadingPrices || priceStatus.isOnCooldown"
+          [class.disabled]="priceStatus.isOnCooldown"
+        >
+          <span *ngIf="!isLoadingPrices && !priceStatus.isOnCooldown">🔄 Aktualizuj Ceny</span>
+          <span *ngIf="isLoadingPrices">⏳ Pobieranie cen...</span>
+          <span *ngIf="!isLoadingPrices && priceStatus.isOnCooldown">🔒 Cooldown ({{ priceStatus.nextAvailableAt }})</span>
+        </button>
+
+        <div class="info-box small">
+          <p>Pobiera ceny tylko dla instrumentów w Twoim portfelu (nie wszystkich 7500)</p>
+          <p>Cooldown: 1 godzina między aktualizacjami</p>
+          <p>Opóźnienie 1s między zapytaniami (limit Finnhub)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Karta: Aktualizacja Papierów Wartościowych -->
+    <div class="admin-card">
+      <div class="card-header">
+        <h2>📋 Aktualizacja Papierów Wartościowych</h2>
+        <p class="card-description">Pobierz najnowszą listę papierów wartościowych z API</p>
+      </div>
+
+      <div class="card-body">
+        <div class="info-box">
+          <p>
+            <strong>Automatyczne pobieranie:</strong> Codziennie o 2:00 AM
+          </p>
+          <p>
+            <strong>Źródła danych:</strong> Finnhub (akcje, ETF-y), CoinGecko (kryptowaluty)
+          </p>
+          <p>
+            <strong>Liczba papierów:</strong> ~7,500 (5,000 akcji + 2,000 ETF-ów + 500 kryptowalut)
+          </p>
+        </div>
+
+        <button
+          class="update-button"
+          (click)="updateSecurities()"
+          [disabled]="isLoadingSecurities"
+        >
+          <span *ngIf="!isLoadingSecurities">🔄 Pobierz Papiery Wartościowe</span>
+          <span *ngIf="isLoadingSecurities">⏳ Pobieranie w toku...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Komunikat -->
+    <div *ngIf="message" [class]="'message ' + messageType">
+      <span *ngIf="messageType === 'success'">✓</span>
+      <span *ngIf="messageType === 'error'">✕</span>
+      {{ message }}
+    </div>
+
+    <!-- Karta: Informacje o Systemie -->
+    <div class="admin-card">
+      <div class="card-header">
+        <h2>ℹ️ Informacje o Systemie</h2>
+      </div>
+
+      <div class="card-body">
+        <div class="info-list">
+          <div class="info-item">
+            <span class="label">Wersja API:</span>
+            <span class="value">1.0</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Baza danych:</span>
+            <span class="value">SQLite</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Framework:</span>
+            <span class="value">.NET 8.0</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Frontend:</span>
+            <span class="value">Angular 18</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Cache krypto:</span>
+            <span class="value">5 minut</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Cache akcji/ETF:</span>
+            <span class="value">24 godziny</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Retry logic:</span>
+            <span class="value">Max 3 próby, 60s przy 429</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

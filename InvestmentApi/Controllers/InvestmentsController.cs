@@ -39,12 +39,19 @@ namespace InvestmentApi.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<InvestmentDto>>> GetInvestments()
+        public async Task<ActionResult<IEnumerable<InvestmentDto>>> GetInvestments([FromQuery] int? category = null)
         {
             var userId = GetCurrentUserId();
-            var transactions = await _context.Transactions
+            IQueryable<Transaction> query = _context.Transactions
                 .Where(t => t.UserId == userId)
-                .Include(t => t.Asset)
+                .Include(t => t.Asset);
+
+            if (category.HasValue)
+            {
+                query = query.Where(t => (int)t.Category == category.Value);
+            }
+
+            var transactions = await query
                 .OrderByDescending(t => t.TransactionDate)
                 .ThenByDescending(t => t.Id)
                 .ToListAsync();
@@ -108,6 +115,7 @@ namespace InvestmentApi.Controllers
             transaction.Amount = dto.Amount;
             transaction.Price = dto.BuyPrice;
             transaction.TransactionDate = dto.BuyDate;
+            transaction.Category = (AssetCategory)dto.Category;
 
             await _context.SaveChangesAsync();
 
@@ -128,13 +136,19 @@ namespace InvestmentApi.Controllers
         }
 
         [HttpGet("summary")]
-        public async Task<ActionResult<IEnumerable<InvestmentSummaryDto>>> GetInvestmentSummary()
+        public async Task<ActionResult<IEnumerable<InvestmentSummaryDto>>> GetInvestmentSummary([FromQuery] int? category = null)
         {
             var userId = GetCurrentUserId();
-            var transactions = await _context.Transactions
+            IQueryable<Transaction> query = _context.Transactions
                 .Where(t => t.UserId == userId)
-                .Include(t => t.Asset)
-                .ToListAsync();
+                .Include(t => t.Asset);
+            
+            if (category.HasValue)
+            {
+                query = query.Where(t => (int)t.Category == category.Value);
+            }
+            
+            var transactions = await query.ToListAsync();
 
             var holdings = new Dictionary<string, (decimal Amount, decimal Invested)>(StringComparer.OrdinalIgnoreCase);
 
@@ -211,6 +225,7 @@ namespace InvestmentApi.Controllers
             Amount = dto.Amount,
             Price = dto.BuyPrice,
             TransactionDate = dto.BuyDate,
+            Category = (AssetCategory)dto.Category,
             CreatedAt = DateTime.UtcNow
         };
     }

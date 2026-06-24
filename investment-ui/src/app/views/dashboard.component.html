@@ -1,12 +1,12 @@
 <div class="dashboard-header">
-  <h1>Dashboard</h1>
-  <p>Przegląd Twojego portfela inwestycyjnego</p>
+  <h1>{{ categoryName || 'Dashboard' }}</h1>
+  <p>{{ categoryName ? 'Przegląd portfela - ' + categoryName : 'Przegląd Twojego portfela inwestycyjnego' }}</p>
 </div>
 
 <section class="kpi-section">
   <div class="kpi-container">
     <div class="kpi-card">
-      <app-investment-summary-box></app-investment-summary-box>
+      <app-investment-summary-box [category]="selectedCategory"></app-investment-summary-box>
     </div>
     <div class="kpi-card kpi-assets-card">
       <div class="section-panel">
@@ -16,7 +16,7 @@
             <p class="panel-subtitle">Podział portfela %</p>
           </div>
         </div>
-        <app-investment-summary></app-investment-summary>
+        <app-investment-summary [category]="selectedCategory"></app-investment-summary>
       </div>
     </div>
   </div>
@@ -32,7 +32,7 @@
           <p class="panel-subtitle">Wynik według kryptowaluty</p>
         </div>
       </div>
-      <app-investment-chart></app-investment-chart>
+      <app-investment-chart [category]="selectedCategory"></app-investment-chart>
     </div>
   </div>
 
@@ -40,13 +40,12 @@
     <div class="section-panel">
       <div class="panel-title">
         <div>
-          <h3>Zakupione aktywa</h3>
-          <p class="panel-subtitle">Edytuj lub usuwaj pozycje</p>
-          
+          <h3>Przegląd aktywów</h3>
+          <p class="panel-subtitle">Wszystkie Twoje inwestycje</p>
         </div>
-        <a class="nav-link-in-panel nav-link-in-panel-primary" routerLink="/dodaj" routerLinkActive="active">Dodaj inwestycję</a>
+        <a *ngIf="selectedCategory !== null" class="nav-link-in-panel nav-link-in-panel-primary" [queryParams]="{ category: selectedCategory }" [fragment]="'category-' + selectedCategory" routerLink="/dodaj" routerLinkActive="active">Dodaj transakcję</a>
       </div>
-      <app-investment-list></app-investment-list>
+      <app-investment-list [category]="selectedCategory"></app-investment-list>
     </div>
   </div>
 </section>

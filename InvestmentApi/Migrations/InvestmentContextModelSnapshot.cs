@@ -23,9 +23,16 @@ namespace InvestmentApi.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Category")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("CoinGeckoId")
                         .IsRequired()
                         .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DefaultUnit")
+                        .HasMaxLength(10)
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsActive")
@@ -36,6 +43,9 @@ namespace InvestmentApi.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
+                    b.Property<int?>("SecurityId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Symbol")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -45,6 +55,10 @@ namespace InvestmentApi.Migrations
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CoinGeckoId");
+
+                    b.HasIndex("SecurityId");
 
                     b.HasIndex("Symbol")
                         .IsUnique();
@@ -57,6 +71,7 @@ namespace InvestmentApi.Migrations
                         new
                         {
                             Id = 1,
+                            Category = 0,
                             CoinGeckoId = "bitcoin",
                             IsActive = true,
                             Name = "Bitcoin",
@@ -65,6 +80,7 @@ namespace InvestmentApi.Migrations
                         new
                         {
                             Id = 2,
+                            Category = 0,
                             CoinGeckoId = "ethereum",
                             IsActive = true,
                             Name = "Ethereum",
@@ -73,6 +89,7 @@ namespace InvestmentApi.Migrations
                         new
                         {
                             Id = 3,
+                            Category = 0,
                             CoinGeckoId = "solana",
                             IsActive = true,
                             Name = "Solana",
@@ -81,6 +98,7 @@ namespace InvestmentApi.Migrations
                         new
                         {
                             Id = 4,
+                            Category = 0,
                             CoinGeckoId = "dogecoin",
                             IsActive = true,
                             Name = "Dogecoin",
@@ -89,6 +107,7 @@ namespace InvestmentApi.Migrations
                         new
                         {
                             Id = 5,
+                            Category = 0,
                             CoinGeckoId = "shiba-inu",
                             IsActive = true,
                             Name = "Shiba Inu",
@@ -97,6 +116,7 @@ namespace InvestmentApi.Migrations
                         new
                         {
                             Id = 6,
+                            Category = 0,
                             CoinGeckoId = "ripple",
                             IsActive = true,
                             Name = "XRP",
@@ -105,6 +125,7 @@ namespace InvestmentApi.Migrations
                         new
                         {
                             Id = 7,
+                            Category = 0,
                             CoinGeckoId = "cardano",
                             IsActive = true,
                             Name = "Cardano",
@@ -113,6 +134,7 @@ namespace InvestmentApi.Migrations
                         new
                         {
                             Id = 8,
+                            Category = 0,
                             CoinGeckoId = "chainlink",
                             IsActive = true,
                             Name = "Chainlink",
@@ -121,6 +143,7 @@ namespace InvestmentApi.Migrations
                         new
                         {
                             Id = 9,
+                            Category = 0,
                             CoinGeckoId = "tether",
                             IsActive = true,
                             Name = "Tether",
@@ -148,10 +171,386 @@ namespace InvestmentApi.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("FetchedAt");
+
+                    b.HasIndex("AssetId", "FetchedAt");
+
                     b.HasIndex("AssetId", "SnapshotDate")
                         .IsUnique();
 
                     b.ToTable("PriceSnapshots");
+                });
+
+            modelBuilder.Entity("InvestmentApi.Models.Security", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CoinGeckoId")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DataSource")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DefaultUnit")
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Exchange")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Figi")
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Isin")
+                        .HasMaxLength(12)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Symbol")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name");
+
+                    b.HasIndex("Symbol")
+                        .IsUnique();
+
+                    b.HasIndex("Type");
+
+                    b.ToTable("Securities");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CoinGeckoId = "bitcoin",
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "USD",
+                            DataSource = "Seed",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Bitcoin",
+                            Symbol = "BTC",
+                            Type = "Crypto"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CoinGeckoId = "ethereum",
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "USD",
+                            DataSource = "Seed",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Ethereum",
+                            Symbol = "ETH",
+                            Type = "Crypto"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CoinGeckoId = "solana",
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "USD",
+                            DataSource = "Seed",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Solana",
+                            Symbol = "SOL",
+                            Type = "Crypto"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CoinGeckoId = "dogecoin",
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "USD",
+                            DataSource = "Seed",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Dogecoin",
+                            Symbol = "DOGE",
+                            Type = "Crypto"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CoinGeckoId = "shiba-inu",
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "USD",
+                            DataSource = "Seed",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Shiba Inu",
+                            Symbol = "SHIB",
+                            Type = "Crypto"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CoinGeckoId = "ripple",
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "USD",
+                            DataSource = "Seed",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "XRP",
+                            Symbol = "XRP",
+                            Type = "Crypto"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CoinGeckoId = "cardano",
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "USD",
+                            DataSource = "Seed",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Cardano",
+                            Symbol = "ADA",
+                            Type = "Crypto"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CoinGeckoId = "chainlink",
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "USD",
+                            DataSource = "Seed",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Chainlink",
+                            Symbol = "LINK",
+                            Type = "Crypto"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CoinGeckoId = "tether",
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "USD",
+                            DataSource = "Seed",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Tether",
+                            Symbol = "USDT",
+                            Type = "Crypto"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "USD",
+                            DataSource = "Seed",
+                            Exchange = "NASDAQ",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Apple Inc.",
+                            Symbol = "AAPL",
+                            Type = "Stock"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "USD",
+                            DataSource = "Seed",
+                            Exchange = "NASDAQ",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Microsoft Corporation",
+                            Symbol = "MSFT",
+                            Type = "Stock"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "USD",
+                            DataSource = "Seed",
+                            Exchange = "NASDAQ",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Alphabet Inc.",
+                            Symbol = "GOOGL",
+                            Type = "Stock"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "USD",
+                            DataSource = "Seed",
+                            Exchange = "NASDAQ",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Amazon.com Inc.",
+                            Symbol = "AMZN",
+                            Type = "Stock"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "USD",
+                            DataSource = "Seed",
+                            Exchange = "NASDAQ",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Tesla Inc.",
+                            Symbol = "TSLA",
+                            Type = "Stock"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "USD",
+                            DataSource = "Seed",
+                            Exchange = "NASDAQ",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Meta Platforms Inc.",
+                            Symbol = "META",
+                            Type = "Stock"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "USD",
+                            DataSource = "Seed",
+                            Exchange = "NASDAQ",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "NVIDIA Corporation",
+                            Symbol = "NVDA",
+                            Type = "Stock"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "USD",
+                            DataSource = "Seed",
+                            Exchange = "NYSE",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "JPMorgan Chase & Co.",
+                            Symbol = "JPM",
+                            Type = "Stock"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "EUR",
+                            DataSource = "Seed",
+                            Exchange = "XETRA",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Vanguard FTSE All-World UCITS ETF",
+                            Symbol = "VWRL",
+                            Type = "ETF"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "EUR",
+                            DataSource = "Seed",
+                            Exchange = "XETRA",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "iShares Core S&P 500 UCITS ETF",
+                            Symbol = "CSPX",
+                            Type = "ETF"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "EUR",
+                            DataSource = "Seed",
+                            Exchange = "XETRA",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Vanguard S&P 500 UCITS ETF",
+                            Symbol = "VUSA",
+                            Type = "ETF"
+                        },
+                        new
+                        {
+                            Id = 21,
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "EUR",
+                            DataSource = "Seed",
+                            Exchange = "XETRA",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "iShares MSCI World UCITS ETF",
+                            Symbol = "EUNL",
+                            Type = "ETF"
+                        },
+                        new
+                        {
+                            Id = 22,
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "EUR",
+                            DataSource = "Seed",
+                            Exchange = "XETRA",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "Vanguard U.S. Government Bond UCITS ETF",
+                            Symbol = "VGOV",
+                            Type = "ETF"
+                        },
+                        new
+                        {
+                            Id = 23,
+                            CreatedAt = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Currency = "EUR",
+                            DataSource = "Seed",
+                            Exchange = "XETRA",
+                            IsActive = true,
+                            LastUpdated = new DateTime(2026, 6, 23, 9, 0, 0, 0, DateTimeKind.Utc),
+                            Name = "iShares MSCI Emerging Markets UCITS ETF",
+                            Symbol = "IEMG",
+                            Type = "ETF"
+                        });
                 });
 
             modelBuilder.Entity("InvestmentApi.Models.Transaction", b =>
@@ -166,7 +565,18 @@ namespace InvestmentApi.Migrations
                     b.Property<int>("AssetId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("Category")
+                        .HasColumnType("INTEGER");
+
                     b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("ExchangeRate")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Notes")
@@ -176,11 +586,18 @@ namespace InvestmentApi.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("TEXT");
 
+                    b.Property<decimal?>("PricePln")
+                        .HasColumnType("TEXT");
+
                     b.Property<DateTime>("TransactionDate")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Type")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Unit")
+                        .HasMaxLength(10)
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
@@ -227,6 +644,10 @@ namespace InvestmentApi.Migrations
 
             modelBuilder.Entity("InvestmentApi.Models.Asset", b =>
                 {
+                    b.HasOne("InvestmentApi.Models.Security", null)
+                        .WithMany("Assets")
+                        .HasForeignKey("SecurityId");
+
                     b.HasOne("InvestmentApi.Models.User", null)
                         .WithMany("Assets")
                         .HasForeignKey("UserId");
@@ -267,6 +688,11 @@ namespace InvestmentApi.Migrations
                     b.Navigation("PriceSnapshots");
 
                     b.Navigation("Transactions");
+                });
+
+            modelBuilder.Entity("InvestmentApi.Models.Security", b =>
+                {
+                    b.Navigation("Assets");
                 });
 
             modelBuilder.Entity("InvestmentApi.Models.User", b =>

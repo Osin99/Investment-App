@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { InvestmentService } from '../../services/investment.service';
 import { InvestmentValuationService } from '../../services/investment-valuation.service';
+import { AssetCategory } from '../../models/asset-category';
 
 @Component({
   selector: 'app-investment-summary-box',
@@ -9,7 +10,9 @@ import { InvestmentValuationService } from '../../services/investment-valuation.
   imports: [CommonModule],
   templateUrl: './investment-summary-box.component.html'
 })
-export class InvestmentSummaryBoxComponent implements OnInit {
+export class InvestmentSummaryBoxComponent implements OnInit, OnChanges {
+  @Input() category: AssetCategory | null = null;
+  
   totalInvested = 0;
   totalMarketValue = 0;
   isLoading = true;
@@ -21,7 +24,15 @@ export class InvestmentSummaryBoxComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.investmentService.getInvestmentSummary().subscribe({
+    this.loadSummary();
+  }
+
+  ngOnChanges(): void {
+    this.loadSummary();
+  }
+
+  private loadSummary(): void {
+    this.investmentService.getInvestmentSummary(this.category ?? undefined).subscribe({
       next: summary => {
         this.investmentValuationService.getValuations(summary).subscribe({
           next: valuations => {

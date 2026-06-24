@@ -22,6 +22,13 @@ builder.Services.AddDbContext<InvestmentContext>(options =>
 builder.Services.AddScoped<IPriceService, PriceService>();
 builder.Services.AddScoped<IPortfolioHistoryService, PortfolioHistoryService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ISecuritySearchService, SecuritySearchService>();
+builder.Services.AddScoped<SecurityUpdateService>();
+builder.Services.AddSingleton<SecurityUpdateLogger>();
+builder.Services.AddHttpClient<FinnhubService>();
+builder.Services.AddHttpClient<CoinGeckoService>();
+builder.Services.AddHostedService<SecurityUpdateBackgroundService>();
+builder.Services.AddMemoryCache();
 
 // JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");

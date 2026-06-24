@@ -10,17 +10,41 @@ export class CryptoService {
 
   constructor(private http: HttpClient) {}
 
-  getPrices(symbols: string[] = ['BTC', 'ETH', 'SOL']): Observable<{ [symbol: string]: number }> {
+  /**
+   * Pobiera ceny dla symboli (krypto, akcje, ETF)
+   * @param symbols - tablica symboli (BTC, AAPL, CSPX itp)
+   * @param type - typ papieru: 'crypto' | 'stocks' | 'all'
+   */
+  getPrices(symbols: string[] = ['BTC', 'ETH', 'SOL'], type: 'crypto' | 'stocks' | 'all' = 'crypto'): Observable<{ [symbol: string]: number }> {
     const normalizedSymbols = symbols.map(s => s.toUpperCase());
     const query = normalizedSymbols.join(',');
 
-    return this.http.get<Record<string, number>>(`${this.apiUrl}?symbols=${query}`).pipe(
-      catchError(error => this.handleError(error))
+    // Dodaj parametr type do zapytania
+    const url = `${this.apiUrl}?symbols=${query}&type=${type}`;
+    
+    console.log(`[CryptoService] Pobieranie cen: ${type} - ${query}`);
+
+    return this.http.get<Record<string, number>>(url).pipe(
+      catchError(error => this.handleError(error, type))
     );
   }
 
-  private handleError(error: HttpErrorResponse): Observable<Record<string, number>> {
-    console.error('Błąd pobierania cen kryptowalut:', error);
+  /**
+   * Pobiera ceny dla kryptowalut
+   */
+  getCryptoPrices(symbols: string[]): Observable<{ [symbol: string]: number }> {
+    return this.getPrices(symbols, 'crypto');
+  }
+
+  /**
+   * Pobiera ceny dla akcji i ETF
+   */
+  getStockPrices(symbols: string[]): Observable<{ [symbol: string]: number }> {
+    return this.getPrices(symbols, 'stocks');
+  }
+
+  private handleError(error: HttpErrorResponse, type: string): Observable<Record<string, number>> {
+    console.error(`[CryptoService] Błąd pobierania cen (${type}):`, error);
     return of({});
   }
 }

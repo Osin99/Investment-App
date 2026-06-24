@@ -1,7 +1,8 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, Input } from "@angular/core";
 import { InvestmentService, Investment } from "../services/investment.service";
 import { CurrencyPipe, DatePipe, NgFor, DecimalPipe, NgIf, UpperCasePipe } from '@angular/common';
 import { Router } from '@angular/router';
+import { AssetCategory } from "../models/asset-category";
 
 @Component({
   selector: 'app-investment-list',
@@ -11,7 +12,10 @@ import { Router } from '@angular/router';
   imports: [DatePipe, NgFor, DecimalPipe, NgIf, CurrencyPipe, UpperCasePipe]
 })
 export class InvestmentListComponent implements OnInit {
+  @Input() category: AssetCategory | null = null;
+  
   investments: Investment[] = [];
+  filteredInvestments: Investment[] = [];
   isLoading = true;
   errorMessage = '';
 
@@ -21,13 +25,14 @@ export class InvestmentListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.investmentService.getInvestments().subscribe({
+    this.investmentService.getInvestments(this.category ?? undefined).subscribe({
       next: data => {
         this.investments = data;
+        this.filteredInvestments = data;
         this.isLoading = false;
       },
       error: err => {
-        this.errorMessage = 'Nie udało się pobrać inwestycji.';
+        this.errorMessage = this.category ? 'Brak transakcji w tej kategorii' : 'Nie udało się pobrać inwestycji.';
         console.error('Błąd pobierania inwestycji', err);
         this.isLoading = false;
       }

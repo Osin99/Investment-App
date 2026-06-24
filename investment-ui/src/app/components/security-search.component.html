@@ -1,0 +1,51 @@
+<div class="security-search-container">
+  <div class="search-input-wrapper">
+    <input
+      type="text"
+      class="form-control security-search-input"
+      placeholder="Wpisz symbol lub nazwę (np. AAPL, Bitcoin, VWRL)"
+      [(ngModel)]="searchQuery"
+      (input)="onSearchInput()"
+      (focus)="isDropdownOpen = searchResults.length > 0"
+      (blur)="closeDropdown()"
+      autocomplete="off"
+    />
+    <div *ngIf="isLoading" class="loading-spinner">
+      <span class="spinner"></span>
+    </div>
+  </div>
+
+  <div *ngIf="searchResults.length > 0" class="dropdown-menu" [style.display]="isDropdownOpen ? 'block' : 'none'">
+    <div
+      *ngFor="let security of searchResults; let i = index"
+      class="dropdown-item"
+      (click)="selectSecurity(security)"
+      [class.active]="i === selectedIndex"
+    >
+      <div class="security-info">
+        <div class="security-symbol">{{ security.symbol }}</div>
+        <div class="security-name">{{ security.name }}</div>
+      </div>
+      <div class="security-meta">
+        <span
+          class="security-type"
+          [style.backgroundColor]="getSecurityTypeColor(security.type)"
+        >
+          {{ getSecurityTypeLabel(security.type) }}
+        </span>
+        <span *ngIf="security.exchange" class="security-exchange">
+          {{ security.exchange }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isDropdownOpen && searchResults.length === 0 && !isLoading && searchQuery" class="dropdown-empty">
+    Brak wyników dla "{{ searchQuery }}"
+  </div>
+
+  <div *ngIf="selectedSecurity" class="selected-security">
+    <span class="selected-label">Wybrano:</span>
+    <span class="selected-value">{{ selectedSecurity.symbol }} - {{ selectedSecurity.name }}</span>
+  </div>
+</div>

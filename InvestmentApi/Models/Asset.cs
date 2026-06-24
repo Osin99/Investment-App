@@ -17,6 +17,11 @@ namespace InvestmentApi.Models
         [StringLength(100)]
         public string Name { get; set; } = string.Empty;
 
+        public AssetCategory Category { get; set; } = AssetCategory.Crypto;
+
+        [StringLength(10)]
+        public string? DefaultUnit { get; set; }  // "g", "oz", "szt" itp.
+
         public bool IsActive { get; set; } = true;
 
         public ICollection<Transaction> Transactions { get; set; } = [];
